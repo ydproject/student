@@ -3,24 +3,11 @@
 {% block content %}
     <!-- 自定义操作按钮-->
     <div id="toolbar" class="form-inline ">
-        <div class="form-group bootstrap-select ">
-            <select id="navStatus" class="dropdown-menu-right selectpicker ">
-                <option value="all" selected="selected">全部工单</option>
-                <option value="manreviewing">待审核</option>
-                <option value="pass">审核通过</option>
-                <option value="timingtask">定时执行</option>
-                <option value="executing">执行中</option>
-                <option value="finish">已执行完毕</option>
-                <option value="exception">执行有异常</option>
-                <option value="abort">人工终止流程</option>
-                <option value="autoreviewwrong">自动审核不通过</option>
-            </select>
-        </div>
         <div class="form-group">
             <button id="btn_add" type="button" class="btn btn-default"
                     onclick="window.location.href='/submitsql/'">
                 <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-                提交SQL
+                添加学生
             </button>
         </div>
     </div>
@@ -56,7 +43,7 @@
                 pageList: [20, 30, 50, 100],       //可供选择的每页的行数（*）
                 showExport: true,                   //是否显示导出按钮
                 exportOptions: {
-                    fileName: 'allworkflow'  //文件名称设置
+                    fileName: 'studentsinfo'  //文件名称设置
                 },
                 search: true,                      //是否显示表格搜索
                 strictSearch: false,                //是否全匹配搜索

@@ -59,6 +59,18 @@ class student(models.Model):
         ordering = ["-id"]
 
 
+class TermInfo(models.Model):
+    term_name = models.CharField(max_length=20, verbose_name=u"名称")
+
+    def __str__(self):
+        return self.term_name
+
+    class Meta:
+        verbose_name = u'学期'
+        verbose_name_plural = u'学期'
+        ordering = ["-id"]
+
+
 class Payment_item(models.Model):
     item_name = models.CharField(max_length=20, verbose_name=u"名称")
     audit_id = models.AutoField(primary_key=True)
@@ -91,7 +103,7 @@ class Payment_Plan(models.Model):
 
 class PayMentInfo(models.Model):
     stuId = models.ForeignKey('student', to_field='id', verbose_name='学号')
-    termId = models.CharField(max_length=20, verbose_name=u"学期")
+    termId = models.ForeignKey('TermInfo', to_field='id', verbose_name=u"学期")
     type = models.CharField(max_length=20, verbose_name=u"种类")
     action = models.CharField(max_length=20, verbose_name=u"费用期间")
     money = models.FloatField(default=0.0, verbose_name=u"金额")

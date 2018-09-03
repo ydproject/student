@@ -3,7 +3,6 @@
 
 """
 @author: yuandi
-@contact: 675041110@qq.com
 @file: view_ajax.py
 @time: 2018/9/3 21:49
 """
@@ -25,7 +24,6 @@ def loginAuthenticate(username, password):
     """登录认证，包含一个登录失败计数器，5分钟内连续失败5次的账号，会被锁定5分钟"""
     lockCntThreshold = settings.LOCK_CNT_THRESHOLD
     lockTimeThreshold = settings.LOCK_TIME_THRESHOLD
-
     # 服务端二次验证参数
     if username == "" or password == "" or username is None or password is None:
         result = {'status': 2, 'msg': '登录用户名或密码为空，请重新输入!', 'data': ''}
@@ -65,7 +63,6 @@ def authenticateEntry(request):
     """接收http请求，然后把请求中的用户名密码传给loginAuthenticate去验证"""
     username = request.POST.get('username')
     password = request.POST.get('password')
-
     result = loginAuthenticate(username, password)
     if result['status'] == 0:
         # session保存用户信息
