@@ -14,6 +14,11 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 from django.conf import settings
 from django.contrib.auth import authenticate
+from django.db.models import Q
+from django.db import transaction
+
+from .extend_json_encoder import ExtendJSONEncoder
+from .models import student, classes
 
 
 login_failure_counter = {}
@@ -68,6 +73,77 @@ def authenticateEntry(request):
         # session保存用户信息
         request.session['login_username'] = username
         result = {'status': 0, 'msg': 'ok', 'data': None}
+
+    return HttpResponse(json.dumps(result), content_type='application/json')
+
+
+# 获取学生信息列表
+@csrf_exempt
+def getstudentsinfo(request):
+    # 获取用户信息
+    loginUser = request.session.get('login_username', False)
+
+    limit = int(request.POST.get('limit'))
+    offset = int(request.POST.get('offset'))
+    limit = offset + limit
+
+    # 获取搜索参数
+    search = request.POST.get('search',"").strip()
+    if search is None:
+        search = ''
+
+    # 获取筛选参数
+    navStatus = request.POST.get('navStatus',"").strip()
+
+
+    # 全部学生信息里面包含搜索条件
+    if navStatus == 'all':
+        listStudentInfo = student.objects.filter(Q(name__contains=search)|Q(tel_num__contains=search)|Q(card_id__contains=search)|Q(sex=search)|Q(fa_name__contains=search)|Q(address__contains=search))\
+                           .order_by('-create_time')[offset:limit]\
+            .values("id", 'name', 'tel_num', 'card_id', 'birthday', 'classid__class_name', 'sex',
+                   'fa_name', 'school_car', 'is_shuangliu', 'is_chengdu', 'infos', 'address', 'remark')
+        StudentInfoCount = student.objects.filter().count()
+    else:
+        listStudentInfo = student.objects.filter(classid__id=navStatus).filter(Q(name__contains=search)|Q(tel_num__contains=search)|Q(card_id__contains=search)|Q(sex=search)|Q(fa_name__contains=search)|Q(address__contains=search))\
+                                                                         .order_by('-create_time')[offset:limit].\
+            values("id", 'name', 'tel_num', 'card_id', 'birthday', 'classid__class_name', 'sex',
+                   'fa_name', 'school_car', 'is_shuangliu', 'is_chengdu', 'infos', 'address', 'remark')
+        StudentInfoCount = student.objects.filter(classid__id=navStatus).filter(Q(name__contains=search)|Q(tel_num__contains=search)|Q(card_id__contains=search)|Q(sex=search)|Q(fa_name__contains=search)|Q(address__contains=search)).count()
+
+    # QuerySet 序列化
+    rows = [row for row in listStudentInfo]
+
+    result = {"total": StudentInfoCount, "rows": rows}
+    # 返回查询结果
+    return HttpResponse(json.dumps(result, cls=ExtendJSONEncoder, bigint_as_string=True),
+                        content_type='application/json')
+
+
+# 删除学生信息
+@csrf_exempt
+def delstudent(request):
+    students = request.POST.get('studentsInfo', "")
+    print("**********", students)
+    result = {'status': 0, 'msg': '删除学生信息成功！', 'data': []}
+
+    if not students:
+        result['status'] = 1
+        result['msg'] = '请选择需要删除信息的学生！'
+        return HttpResponse(json.dumps(result), content_type='application/json')
+
+    student_ids = students.split("&")
+    # 使用事务保持数据一致性
+    try:
+        with transaction.atomic():
+            for student_id in student_ids:
+                id = int(student_id.split("=")[1])
+                student.objects.get(id=id).delete()
+    except Exception as msg:
+        import traceback
+        print(traceback.format_exc())
+        result['status'] = 1
+        result['msg'] = str(msg)
+        return HttpResponse(json.dumps(result), content_type='application/json')
 
     return HttpResponse(json.dumps(result), content_type='application/json')
 

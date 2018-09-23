@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="row clearfix">
+
+            <form id="form-submitstu" action="/addstutodb/" method="post" class="form-horizontal" role="form">
+                {% csrf_token %}
+                <div class="fields ">
+                    <div class="row">
+                        <div class="control-group  field-name">
+                            <div class="col-md-12 form-group ">
+                                <div class="control-label col-md-3">
+                                    <label class="required" for="id_name">姓名:</label>
+                                </div>
+                                <div class="controls col-md-9">
+                                    <input class="vTextField" id="id_name" maxlength="50" name="name" data-name="姓名" type="text" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                        <div class="row">
+                            <div class="control-group  field-tel_num">
+                                <div class="col-md-12 form-group ">
+                                    <div class="control-label col-md-3">
+                                        <label class="required" for="id_tel_num">联系电话:</label>
+                                    </div>
+                                    <div class="controls col-md-9">
+                                            <input class="vTextField" id="id_tel_num" maxlength="50" name="tel_num" data-name="联系电话" type="text" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <div class="row">
+                        <div class="control-group  field-card_id">
+                            <div class="col-md-12 form-group ">
+                                <div class="control-label col-md-3">
+                                    <label class="required" for="id_card_id">身份证件号码:</label>
+                                </div>
+                                <div class="controls col-md-9">
+                                        <input class="vTextField" id="id_card_id" maxlength="50" name="card_id" data-name="身份证件号码" type="text" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="control-group  field-birthday">
+                            <div class="col-md-12 form-group ">
+                                <div class="control-label col-md-3">
+                                    <label for="id_birthday">出生年月:</label>
+                                </div>
+                                <div class="controls col-md-9">
+                                    <input class="vDateField" id="id_birthday" name="birthday" data-name="出生年月" size="10" type="text" data-format="yyyy-MM-dd" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                        <div class="row">
+                            <div class="control-group  field-classid">
+                                <div class="col-md-12 form-group ">
+                                    <div class="control-label col-md-3">
+                                        <label class="required" for="id_classid">班级:</label>
+                                    </div>
+                                    <div class="controls col-md-9">
+                                        <div class="related-widget-wrapper">
+                                            <select id="id_classid" name="classid" data-name="班级" data-placeholder="---------" required>
+                                                <option value="" selected="selected">---------</option>
+                                                {% for classinfo in AllClassesInfo %}
+                                                <option value="{{classinfo.id}}">{{classinfo.class_name}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="control-group  field-sex">
+                                <div class="col-md-12 form-group ">
+                                    <div class="control-label col-md-3">
+                                        <label class="required" for="id_sex">性别:</label>
+                                    </div>
+                                    <div class="controls col-md-9">
+                                        <select id="id_sex" name="sex" data-name="性别" data-placeholder="---------" required>
+                                            <option value="" selected="selected">---------</option>
+                                            <option value="男">男</option>
+                                            <option value="女">女</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="control-group  field-fa_name">
+                                <div class="col-md-12 form-group ">
+                                    <div class="control-label col-md-3">
+                                        <label class="required" for="id_fa_name">监护人姓名:</label>
+                                    </div>
+                                    <div class="controls col-md-9">
+                                        <input class="vTextField" id="id_fa_name" maxlength="50" name="fa_name" data-name="监护人姓名" type="text" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="control-group  field-school_car">
+                                <div class="col-md-12 form-group ">
+                                    <div class="control-label col-md-3">
+                                        <label class="required" for="id_school_car">校车:</label>
+                                    </div>
+                                    <div class="controls col-md-9">
+                                        <input class="vTextField" id="id_school_car" maxlength="50" name="school_car" data-name="校车" type="text">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="control-group  field-is_shuangliu">
+                                <div class="col-md-12 form-group ">
+                                    <div class="control-label col-md-3">
+                                        <label class="required" for="id_is_shuangliu">是否双流户籍:</label>
+                                    </div>
+                                    <div class="controls col-md-9">
+                                        <select id="id_is_shuangliu" name="is_shuangliu" data-name="是否双流户籍" data-placeholder="---------" required>
+                                            <option value="" selected="selected">---------</option>
+                                            <option value="否">否</option>
+                                            <option value="是">是</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="control-group  field-is_chengdu">
+                                <div class="col-md-12 form-group ">
+                                    <div class="control-label col-md-3">
+                                        <label class="required" for="id_is_chengdu">是否大成都:</label>
+                                    </div>
+                                    <div class="controls col-md-9">
+                                        <select id="id_is_chengdu" name="is_chengdu" data-name="是否大成都" data-placeholder="---------" required>
+                                            <option value="" selected="selected">---------</option>
+                                            <option value="否">否</option>
+                                            <option value="是">是</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="control-group  field-infos">
+                                <div class="col-md-12 form-group ">
+                                    <div class="control-label col-md-3">
+                                        <label class="required" for="id_infos">材料:</label>
+                                    </div>
+                                    <div class="controls col-md-9">
+                                            <input class="vTextField" id="id_infos" maxlength="50" name="infos" data-name="材料" type="text">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="control-group  field-address">
+                                <div class="col-md-12 form-group ">
+                                    <div class="control-label col-md-3">
+                                        <label class="required" for="id_address">户籍详细地址:</label>
+                                    </div>
+                                    <div class="controls col-md-9">
+                                            <input class="vTextField" id="id_address" maxlength="180" name="address" data-name="户籍详细地址" type="text" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="control-group  field-remark">
+                                <div class="col-md-12 form-group ">
+                                    <div class="control-label col-md-3">
+                                        <label class="required" for="id_remark">备注:</label>
+                                    </div>
+                                    <div class="controls col-md-9">
+                                        <textarea class="vLargeTextField" cols="40" id="id_remark" name="remark" data-name="备注" rows="10"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                        <div class="control-group  field-confirm">
+                            <div class="col-md-12 form-group ">
+                                <div class="control-label col-md-3">
+                                </div>
+                                <div class="controls col-md-9">
+                                    <button type="reset" id="btn-reset" class="btn btn-warning">清空选项</button>
+                                    <input id="btn-submitstu" type="button" class="btn btn-success" value="提交信息"/>
+                                </div>
+                            </div>
+                        </div>
+                            </div>
+                    </div>
+            </form>
+        </div>
+    </div>
+{% endblock content %}
+{% block js %}
+    {% load staticfiles %}
+    <link href="{% static 'fileinput/css/fileinput.min.css' %}" rel="stylesheet">
+    <script src="{% static 'ace/ace.js' %}"></script>
+    <script src="{% static 'ace/ext-language_tools.js' %}"></script>
+    <script src="{% static 'ace/mode-sql.js' %}"></script>
+    <script src="{% static 'ace/theme-github.js' %}"></script>
+    <script src="{% static 'ace/snippets/sql.js' %}"></script>
+    <script src="{% static 'ace/ace_init.js' %}"></script>
+    <script src="{% static 'fileinput/js/fileinput.min.js' %}"></script>
+    <script src="{% static 'fileinput/js/locales/zh.js' %}"></script>
+    <script src="{% static 'user/js/autoreview.js' %}"></script>
+    <script src="{% static 'dist/js/sql-formatter.min.js' %}"></script>
+    <script src="{% static 'laydate/laydate.js' %}"></script> <!-- 日期控件 -->
+    <script>
+        laydate.render({
+          elem: '#id_birthday' //指定元素
+        });
+    </script>
+    <!--validate -->
+    <script>
+        function validateForm(element) {
+            var result = true;
+            element.find('[required]').each(
+                function () {
+                    var fieldElement = $(this);
+                    //如果为null则设置为''
+                    var value = fieldElement.val() || '';
+                    if (value) {
+                        value = value.trim();
+                    }
+                    if (!value || value === fieldElement.attr('data-placeholder')) {
+                        alert((fieldElement.attr('data-name') || this.name) + "不能为空！");
+                        result = false;
+                        return result;
+                    }
+                }
+            );
+            return result;
+        }
+
+        $("#btn-submitstu").click(function () {
+            //获取form对象，判断输入，通过则提交
+            var formSubmit = $("#form-submitstu");
+            if (validateForm(formSubmit)) {
+                formSubmit.submit();
+                }
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
+            $(document).keydown(function(event) {
+                //keycode==13为回车键
+                if (event.keyCode == 13) {
+                    $('#btn-submitstu').click();
+                }
+            });
+        });
+    </script>
+{% endblock %}

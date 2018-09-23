@@ -29,9 +29,9 @@ class classesAdmin(admin.ModelAdmin):
 
 @admin.register(student)
 class studentAdmin(admin.ModelAdmin):
-    list_display = ('name', 'tel_num', 'card_id', 'birthday', 'class_id', 'sex', 'fa_name', 'school_car',
+    list_display = ('name', 'tel_num', 'card_id', 'birthday', 'classid', 'sex', 'fa_name', 'school_car',
                     'is_shuangliu', 'is_chengdu', 'infos', 'address', 'remark')
-    search_fields = ['name', 'tel_num', 'card_id', 'birthday', 'class_id', 'sex', 'fa_name', 'school_car',
+    search_fields = ['name', 'tel_num', 'card_id', 'birthday', 'classid', 'sex', 'fa_name', 'school_car',
                     'is_shuangliu', 'is_chengdu', 'infos', 'address', 'remark']
 
 

@@ -3,11 +3,25 @@
 {% block content %}
     <!-- 自定义操作按钮-->
     <div id="toolbar" class="form-inline ">
+        <div class="form-group bootstrap-select ">
+            <select id="navStatus" class="dropdown-menu-right selectpicker ">
+                <option value="all" selected="selected">全部班级</option>
+                {% for classname in classes %}
+                <option value="{{classname.id}}">{{classname.class_name}}</option>
+                {% endfor %}
+            </select>
+        </div>
         <div class="form-group">
             <button id="btn_add" type="button" class="btn btn-default"
-                    onclick="window.location.href='/submitsql/'">
+                    onclick="window.location.href='/addstudent/'">
                 <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                 添加学生
+            </button>
+        </div>
+        <div class="form-group">
+            <button id="btn_del" type="button" class="btn btn-default">
+                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                删除学生
             </button>
         </div>
     </div>
@@ -24,6 +38,33 @@
     <script src="{% static 'bootstrap-table/js/tableExport.min.js' %}"></script>
     <script src="{% static 'dist/js/sql-formatter.min.js' %}"></script>
     <script>
+        // 删除学生信息
+        $("#btn_del").click(function () {
+            //将选择的学生信息通过ajax提交
+            var students = $("input[name=id]:checked").serialize();
+            $.ajax({
+                type: "post",
+                url: "/delstudent/",
+                dataType: "json",
+                data:{
+                    studentsInfo: students
+                },
+                complete: function () {
+                },
+                success: function (data) {
+                    alert(data.msg);
+                    if (data.status == 0) {
+                        location.href = '/studentsinfo/'
+                    }
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(errorThrown);
+                }
+            });
+        });
+    </script>
+    <script>
         //获取申请列表
         function get_sqlauditlist() {
             //采取异步请求
@@ -31,7 +72,7 @@
             $('#sqlaudit-list').bootstrapTable('destroy').bootstrapTable({
                 method: 'post',
                 contentType: "application/x-www-form-urlencoded",
-                url: "/sqlworkflow/",
+                url: "/getstudentsinfo/",
                 striped: true,                      //是否显示行间隔色
                 cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
                 pagination: true,                   //是否显示分页（*）
@@ -69,29 +110,53 @@
                         }
                     },
                 columns: [{
-                    title: '工单ID',
-                    field: 'id'
-                }, {
-                    title: '工单名称',
-                    field: 'workflow_name',
+                    title: "<input type=\"checkbox\" name=\"all\" style=\"display: inline-block;\">",
+                    field: 'id',
+                    formatter: function (value, row, index) {
+                        return "<input type=\"checkbox\" name=\"id\" value=\"" + row.id +"\" style=\"display: inline-block;\">"
+                    }
+                },{
+                    title: '姓名',
+                    field: 'name',
                     formatter: function (value, row, index) {
                         return "<a href=\"/detail/" + row.id + "/\">" + value + "</a>"
                     }
                 }, {
-                    title: '发起人',
-                    field: 'engineer'
+                    title: '联系电话',
+                    field: 'tel_num'
                 }, {
-                    title: '工单状态',
-                    field: 'status',
-                    formatter: function (value, row, index) {
-                        return sqlworkflowStatus_formatter(value)
-                    }
+                    title: '身份证号码',
+                    field: 'card_id',
                 }, {
-                    title: '发起时间',
-                    field: 'create_time'
+                    title: '出生年月',
+                    field: 'birthday'
                 }, {
-                    title: '目标集群',
-                    field: 'cluster_name'
+                    title: '班级',
+                    field: 'classid__class_name'
+                },{
+                    title: '性别',
+                    field: 'sex'
+                },{
+                    title: '监护人姓名',
+                    field: 'fa_name'
+                },{
+                    title: '校车',
+                    field: 'school_car'
+                },{
+                    title: '是否双流户籍',
+                    field: 'is_shuangliu'
+                },{
+                    title: '是否大成都',
+                    field: 'is_chengdu'
+                },{
+                    title: '材料',
+                    field: 'infos'
+                },{
+                    title: '户籍详细地址',
+                    field: 'address'
+                },{
+                    title: '备注',
+                    field: 'remark'
                 }],
                 onLoadSuccess: function () {
                 },
@@ -118,6 +183,19 @@
         //初始化数据
         $(document).ready(function () {
             get_sqlauditlist();
+            $(document).keydown(function(event) {
+                //keycode==13为回车键
+                if (event.keyCode == 13) {
+                    $('#btn_add').click();
+                }
+            });
+            $("input[name=all]").click(function () {
+                if (this.checked) {
+                    $("input[name=id]").prop("checked", true);
+                } else {
+                    $("input[name=id]").prop("checked", false);
+                }
+            });
         });
     </script>
 {% endblock %}

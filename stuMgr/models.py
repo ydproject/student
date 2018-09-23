@@ -38,7 +38,7 @@ class student(models.Model):
     tel_num = models.CharField('联系电话', max_length=50)
     card_id = models.CharField('身份证件号码', max_length=50)
     birthday = models.DateField('出生年月',null=True, blank=True)
-    class_id = models.ForeignKey(classes, default=1, verbose_name='班级')
+    classid = models.ForeignKey(classes, verbose_name='班级')
     sex = models.CharField('性别', choices=(('男', '男'), ('女', '女')), max_length=20)
     fa_name = models.CharField('监护人姓名', max_length=50)
     school_car = models.CharField('校车', max_length=50)
@@ -72,7 +72,6 @@ class TermInfo(models.Model):
 
 
 class Payment_item(models.Model):
-    item_name = models.CharField(max_length=20, verbose_name=u"名称")
     audit_id = models.AutoField(primary_key=True)
     type_info = models.CharField(max_length=20, verbose_name=u"种类")
     action = models.CharField(max_length=20, choices=(
@@ -83,7 +82,7 @@ class Payment_item(models.Model):
 
 
     def __str__(self):
-        return self.item_name
+        return str(self.audit_id) + "_" + self.type_info + "_" + self.action + "_" + self.money
 
     class Meta:
         verbose_name = u'缴费种类'
@@ -139,6 +138,6 @@ class Flowing(models.Model):
     update_time = models.DateTimeField('更新时间', auto_now=True)
 
     class Meta:
-        verbose_name = u"预收费信息"
+        verbose_name = u"流水信息"
         verbose_name_plural = verbose_name
         ordering = ["-id"]
