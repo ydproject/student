@@ -150,6 +150,8 @@ def delstudent(request):
 # 提交学生信息到数据库
 @csrf_exempt
 def addstutodb(request):
+    id = request.POST.get('id', '').strip()
+    print(id)
     name = request.POST.get('name', '').strip()
     tel_num = request.POST.get('tel_num', '').strip()
     card_id = request.POST.get('card_id', '').strip()
@@ -173,20 +175,41 @@ def addstutodb(request):
         result['status'] = 1
         result['msg'] = '身份证号码输入不正确!'
         return HttpResponse(json.dumps(result), content_type='application/json')
-    if student.objects.filter(card_id=card_id):
-        result['status'] = 1
-        result['msg'] = '该身份证号码的学生已存在!'
-        return HttpResponse(json.dumps(result), content_type='application/json')
 
     try:
-        Student = student(name=name,tel_num=tel_num, card_id=card_id, birthday=birthday, classid_id=classid, sex=sex, fa_name=fa_name,
+        if id:
+            Student = student.objects.get(id=id)
+            Student.name = name
+            Student.tel_num = tel_num
+            Student.card_id = card_id
+            Student.birthday = birthday
+            Student.classid_id = classid
+            Student.sex = sex
+            Student.fa_name = fa_name
+            Student.school_car = school_car
+            Student.is_shuangliu = is_shuangliu
+            Student.is_chengdu = is_chengdu
+            Student.infos = infos
+            Student.address = address
+            Student.remark = remark
+            Student.save()
+            result["msg"] = "编辑学生信息成功!"
+        else:
+            if student.objects.filter(card_id=card_id):
+                result['status'] = 1
+                result['msg'] = '该身份证号码的学生已存在!'
+                return HttpResponse(json.dumps(result), content_type='application/json')
+            Student = student(name=name,tel_num=tel_num, card_id=card_id, birthday=birthday, classid_id=classid, sex=sex, fa_name=fa_name,
                 school_car=school_car, is_shuangliu=is_shuangliu, is_chengdu=is_chengdu, infos=infos, address=address, remark=remark)
-        Student.save()
+            Student.save()
     except Exception as msg:
         import traceback
         print(traceback.format_exc())
         result['status'] = 1
-        result['msg'] = '添加学生信息失败，请联系管理员处理!'
+        if id:
+            result['msg'] = '编辑学生信息失败，请联系管理员处理!'
+        else:
+            result['msg'] = '添加学生信息失败，请联系管理员处理!'
         return HttpResponse(json.dumps(result), content_type='application/json')
 
     return HttpResponse(json.dumps(result), content_type='application/json')

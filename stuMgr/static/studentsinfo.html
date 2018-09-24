@@ -24,6 +24,12 @@
                 删除学生
             </button>
         </div>
+        <div class="form-group">
+            <button id="btn_import" type="button" class="btn btn-default">
+                <span class="glyphicon glyphicon-upload" aria-hidden="true"></span>
+                导入学生
+            </button>
+        </div>
     </div>
     <!-- 审核列表的表格-->
     <div class="table-responsive">
@@ -31,41 +37,86 @@
                style="table-layout:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
         </table>
     </div>
+<!-- 模态框上传（Modal） -->
+<div class="modal fade" id="upload_model" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+					&times;
+				</button>
+				<h4 class="modal-title" id="commonModalLabel">请选择Excel文件</h4>
+			</div>
+			<div class="modal-body" id="commoModal-body">
+                <a href="~/Data/ExcelTemplate/Order.xlsx" class="form-control" style="border:none;">下载导入模板</a>
+                <input id="file-0c" class="file" type="file">
+            </div>
+			<div class="modal-footer">
+                <button type="button" id="upload_confirm_all" class="btn btn-primary" data-dismiss="modal">全量导入</button>
+                <button type="button" id="upload_confirm_inc" class="btn btn-default" data-dismiss="modal">增量导入</button>
+			</div>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal -->
+</div>
 {% endblock content %}
 {% block js %}
     {% load staticfiles %}
+    <link href="{% static 'bootstrap-fileinput-master/css/fileinput.css' %}" rel="stylesheet" media="all" type="text/css">
+    <link href="{% static 'bootstrap-fileinput-master/themes/explorer-fa/theme.css' %}" rel="stylesheet" media="all" type="text/css">
     <script src="{% static 'bootstrap-table/js/bootstrap-table-export.min.js' %}"></script>
     <script src="{% static 'bootstrap-table/js/tableExport.min.js' %}"></script>
+    <script src="{% static 'bootstrap-fileinput-master/js/fileinput.js' %}" type="text/javascript"></script>
+    <script src="{% static 'bootstrap-fileinput-master/js/locales/zh.js' %}" type="text/javascript"></script>
+    <script src="{% static 'bootstrap-fileinput-master/js/plugins/sortable.js' %}" type="text/javascript"></script>
+    <script src="{% static 'bootstrap-fileinput-master/js/locales/fr.js' %}" type="text/javascript"></script>
+    <script src="{% static 'bootstrap-fileinput-master/themes/fa/theme.js' %}" type="text/javascript"></script>
+
+    <script>
+        // 导入学生信息
+        $("#btn_import").click(function () {
+            $('#upload_model').modal({
+                keyboard: true
+            });
+        });
+    </script>
     <script>
         // 删除学生信息
         $("#btn_del").click(function () {
-            //将选择的学生信息通过ajax提交
-            var students = $("input[name=id]:checked").serialize();
-            $.ajax({
-                type: "post",
-                url: "/delstudent/",
-                dataType: "json",
-                data:{
-                    studentsInfo: students
-                },
-                complete: function () {
-                },
-                success: function (data) {
-                    $('#myModal-body').html(data.msg);
-                    $('#myModal').modal({
-                        keyboard: true
-                    });
-                    if (data.status == 0) {
-                        $('#myModal').on('hide.bs.modal', function () {
-                                location.href = '/studentsinfo/'
-                        })
-                    }
-
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(errorThrown);
-                }
+            $('#commoModal-body').html("是否确认删除该学生信息？");
+            $('#common_confirm_model').modal({
+                keyboard: true
             });
+            $('#common_confirm_ok').click(function(){
+                var students = $("input[name=id]:checked").serialize();
+                $.ajax({
+                    type: "post",
+                    url: "/delstudent/",
+                    dataType: "json",
+                    data:{
+                        studentsInfo: students
+                    },
+                    complete: function () {
+                    },
+                    success: function (data) {
+                        $('#myModal-body').html(data.msg);
+                        $('#myModal').modal({
+                            keyboard: true
+                        });
+                        if (data.status == 0) {
+                            $('#myModal').on('hide.bs.modal', function () {
+                                    location.href = '/studentsinfo/'
+                            })
+                        }
+
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        alert(errorThrown);
+                    }
+                });
+            })
+            $('#common_confirm_cancel').click(function(){
+                location.href = '/studentsinfo/'
+            })
         });
     </script>
     <script>
@@ -123,7 +174,7 @@
                     title: '姓名',
                     field: 'name',
                     formatter: function (value, row, index) {
-                        return "<a href=\"/detail/" + row.id + "/\">" + value + "</a>"
+                        return "<a href=\"/studetail/" + row.id + "/\">" + value + "</a>"
                     }
                 }, {
                     title: '联系电话',
