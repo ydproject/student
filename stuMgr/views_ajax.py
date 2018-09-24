@@ -123,7 +123,6 @@ def getstudentsinfo(request):
 @csrf_exempt
 def delstudent(request):
     students = request.POST.get('studentsInfo', "")
-    print("**********", students)
     result = {'status': 0, 'msg': '删除学生信息成功！', 'data': []}
 
     if not students:
@@ -143,6 +142,51 @@ def delstudent(request):
         print(traceback.format_exc())
         result['status'] = 1
         result['msg'] = str(msg)
+        return HttpResponse(json.dumps(result), content_type='application/json')
+
+    return HttpResponse(json.dumps(result), content_type='application/json')
+
+
+# 提交学生信息到数据库
+@csrf_exempt
+def addstutodb(request):
+    name = request.POST.get('name', '').strip()
+    tel_num = request.POST.get('tel_num', '').strip()
+    card_id = request.POST.get('card_id', '').strip()
+    birthday = request.POST.get('birthday', '')
+    classid = request.POST.get('classid', '')
+    sex = request.POST.get('sex', '')
+    fa_name = request.POST.get('fa_name', '').strip()
+    school_car = request.POST.get('school_car', '').strip()
+    is_shuangliu = request.POST.get('is_shuangliu', '')
+    is_chengdu = request.POST.get('is_chengdu', '')
+    infos = request.POST.get('infos', '').strip()
+    address = request.POST.get('address', '').strip()
+    remark = request.POST.get('remark', '').strip()
+    result = {'status': 0, 'msg': '添加学生信息成功！', 'data': []}
+
+    if len(tel_num) != 11:
+        result['status'] = 1
+        result['msg'] = '联系电话输入不正确!'
+        return HttpResponse(json.dumps(result), content_type='application/json')
+    if len(card_id) != 18:
+        result['status'] = 1
+        result['msg'] = '身份证号码输入不正确!'
+        return HttpResponse(json.dumps(result), content_type='application/json')
+    if student.objects.filter(card_id=card_id):
+        result['status'] = 1
+        result['msg'] = '该身份证号码的学生已存在!'
+        return HttpResponse(json.dumps(result), content_type='application/json')
+
+    try:
+        Student = student(name=name,tel_num=tel_num, card_id=card_id, birthday=birthday, classid_id=classid, sex=sex, fa_name=fa_name,
+                school_car=school_car, is_shuangliu=is_shuangliu, is_chengdu=is_chengdu, infos=infos, address=address, remark=remark)
+        Student.save()
+    except Exception as msg:
+        import traceback
+        print(traceback.format_exc())
+        result['status'] = 1
+        result['msg'] = '添加学生信息失败，请联系管理员处理!'
         return HttpResponse(json.dumps(result), content_type='application/json')
 
     return HttpResponse(json.dumps(result), content_type='application/json')

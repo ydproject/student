@@ -4,7 +4,7 @@
     <div class="container-fluid">
         <div class="row clearfix">
 
-            <form id="form-submitstu" action="/addstutodb/" method="post" class="form-horizontal" role="form">
+            <form id="form-submitstu"  class="form-horizontal" role="form">
                 {% csrf_token %}
                 <div class="fields ">
                     <div class="row">
@@ -231,7 +231,10 @@
                         value = value.trim();
                     }
                     if (!value || value === fieldElement.attr('data-placeholder')) {
-                        alert((fieldElement.attr('data-name') || this.name) + "不能为空！");
+                        $('#myModal-body').html((fieldElement.attr('data-name') || this.name) + "不能为空！");
+                        $('#myModal').modal({
+                            keyboard: true
+                        });
                         result = false;
                         return result;
                     }
@@ -240,11 +243,63 @@
             return result;
         }
 
+        function addstutodb() {
+            var name = $('#id_name')
+            var tel_num = $('#id_tel_num');
+            var card_id = $('#id_card_id');
+            var birthday = $('#id_birthday');
+            var classid = $('#id_classid');
+            var sex = $('#id_sex');
+            var fa_name = $('#id_fa_name');
+            var school_car = $('#id_school_car');
+            var is_shuangliu = $('#id_is_shuangliu');
+            var is_chengdu = $('#id_is_chengdu');
+            var infos = $('#id_infos');
+            var address = $('#id_address');
+            var remark = $('#id_remark');
+            $.ajax({
+                type: "post",
+                url: "/addstutodb/",
+                dataType: "json",
+                data: {
+                    name : name.val(),
+                    tel_num : tel_num.val(),
+                    card_id : card_id.val(),
+                    birthday : birthday.val(),
+                    classid : classid.val(),
+                    sex : sex.val(),
+                    fa_name : fa_name.val(),
+                    school_car : school_car.val(),
+                    is_shuangliu : is_shuangliu.val(),
+                    is_chengdu : is_chengdu.val(),
+                    infos : infos.val(),
+                    address : address.val(),
+                    remark : remark.val()
+                },
+                complete: function () {
+                },
+                success: function (data) {
+                    $('#myModal-body').html(data.msg);
+                    $('#myModal').modal({
+                        keyboard: true
+                    });
+                    if (data.status == 0) {
+                        $('#myModal').on('hide.bs.modal', function () {
+                                location.href = '/studentsinfo/'
+                        })
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(errorThrown);
+                }
+            });
+        };
+
         $("#btn-submitstu").click(function () {
             //获取form对象，判断输入，通过则提交
             var formSubmit = $("#form-submitstu");
             if (validateForm(formSubmit)) {
-                formSubmit.submit();
+                addstutodb();
                 }
         });
     </script>

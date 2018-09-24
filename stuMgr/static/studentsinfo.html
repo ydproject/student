@@ -36,7 +36,6 @@
     {% load staticfiles %}
     <script src="{% static 'bootstrap-table/js/bootstrap-table-export.min.js' %}"></script>
     <script src="{% static 'bootstrap-table/js/tableExport.min.js' %}"></script>
-    <script src="{% static 'dist/js/sql-formatter.min.js' %}"></script>
     <script>
         // 删除学生信息
         $("#btn_del").click(function () {
@@ -52,9 +51,14 @@
                 complete: function () {
                 },
                 success: function (data) {
-                    alert(data.msg);
+                    $('#myModal-body').html(data.msg);
+                    $('#myModal').modal({
+                        keyboard: true
+                    });
                     if (data.status == 0) {
-                        location.href = '/studentsinfo/'
+                        $('#myModal').on('hide.bs.modal', function () {
+                                location.href = '/studentsinfo/'
+                        })
                     }
 
                 },
