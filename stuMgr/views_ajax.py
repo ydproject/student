@@ -215,5 +215,15 @@ def addstutodb(request):
     return HttpResponse(json.dumps(result), content_type='application/json')
 
 
+#上传文件
+@csrf_exempt
+def upload(request):
+    f = request.FILES['file_data']
+    print(f)
+    print(f.read())
+    result = {'status': 1, 'msg': '文件上传成功！', 'data': []}
+    return HttpResponse(json.dumps(result), content_type='application/json')
+
+
 if __name__ == "__main__":
     pass

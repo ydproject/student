@@ -60,4 +60,3 @@ def studetail(request, stuId):
     context["remark"] = studentInfo.remark
     context["AllClassesInfo"] = classes_info
     return render(request, 'studetail.html', context)
-

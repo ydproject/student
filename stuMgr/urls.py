@@ -16,5 +16,6 @@ urlpatterns = [
     url(r'^getstudentsinfo/$', views_ajax.getstudentsinfo, name='getstudentsinfo'),
     url(r'^delstudent/$', views_ajax.delstudent, name='delstudent'),
     url(r'^addstutodb/$', views_ajax.addstutodb, name='addstutodb'),
+    url(r'^upload/$', views_ajax.upload, name='upload'),
 ]
 

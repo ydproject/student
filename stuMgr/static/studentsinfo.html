@@ -49,7 +49,7 @@
 			</div>
 			<div class="modal-body" id="commoModal-body">
                 <a href="~/Data/ExcelTemplate/Order.xlsx" class="form-control" style="border:none;">下载导入模板</a>
-                <input id="file-0c" class="file" type="file">
+                <input id="file-input" type="file" class="file" data-upload-url="/upload/">
             </div>
 			<div class="modal-footer">
                 <button type="button" id="upload_confirm_all" class="btn btn-primary" data-dismiss="modal">全量导入</button>
@@ -70,7 +70,6 @@
     <script src="{% static 'bootstrap-fileinput-master/js/plugins/sortable.js' %}" type="text/javascript"></script>
     <script src="{% static 'bootstrap-fileinput-master/js/locales/fr.js' %}" type="text/javascript"></script>
     <script src="{% static 'bootstrap-fileinput-master/themes/fa/theme.js' %}" type="text/javascript"></script>
-
     <script>
         // 导入学生信息
         $("#btn_import").click(function () {
