@@ -9,6 +9,7 @@
 
 import datetime
 import simplejson as json
+import os
 
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
@@ -218,10 +219,35 @@ def addstutodb(request):
 #上传文件
 @csrf_exempt
 def upload(request):
-    f = request.FILES['file_data']
-    print(f)
-    print(f.read())
-    result = {'status': 1, 'msg': '文件上传成功！', 'data': []}
+    myFile = request.FILES['file_data']
+    if not myFile:
+        return HttpResponse("no files for upload!")
+    try:
+        destination = open(os.path.join(os.getcwd(), "upload", myFile.name), 'wb+')  # 打开特定的文件进行二进制的写操作
+        for chunk in myFile.chunks():  # 分块写入文件
+            destination.write(chunk)
+            destination.close()
+    except Exception as e:
+        import traceback
+        print(traceback.format_exc())
+        return HttpResponse("upload failed!")
+    result = {'status': 0, 'msg': '文件上传成功！', 'data': []}
+    return HttpResponse(json.dumps(result), content_type='application/json')
+
+
+#导入excel
+@csrf_exempt
+def importexcel(request):
+    """
+    新建 Microsoft Excel 工作表.xlsx all Done
+    :param request:
+    :return:
+    """
+    filename = request.POST.get("filename", "").strip()
+    type = request.POST.get("type", "").strip()
+    process = request.POST.get("process", "").strip()
+    print(filename, type, process)
+    result = {'status': 0, 'msg': '学生信息导入成功！', 'data': []}
     return HttpResponse(json.dumps(result), content_type='application/json')
 
 

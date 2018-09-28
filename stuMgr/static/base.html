@@ -93,7 +93,7 @@
         </div>
     </div>
 <!-- 模态框提示（Modal） -->
-<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div class="modal fade" id="alertModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
@@ -101,31 +101,30 @@
 					&times;
 				</button>
 				<h4 class="modal-title" id="myModalLabel">
-					提示
 				</h4>
 			</div>
-			<div class="modal-body" id="myModal-body"></div>
+			<div class="modal-body" id="myModal-body"><p></p></div>
 			<div class="modal-footer">
-				<button type="button" class="btn btn-default" data-dismiss="modal">确定
+				<button type="button" class="btn btn-default sureBtn" data-dismiss="modal">确定
 				</button>
 			</div>
 		</div><!-- /.modal-content -->
 	</div><!-- /.modal -->
 </div>
 <!-- 模态框确认（Modal） -->
-<div class="modal fade" id="common_confirm_model" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
 					&times;
 				</button>
-				<h4 class="modal-title" id="commonModalLabel">确认</h4>
+				<h4 class="modal-title" id="commonModalLabel"></h4>
 			</div>
-			<div class="modal-body" id="commoModal-body"></div>
+			<div class="modal-body" id="commoModal-body"><p></p></div>
 			<div class="modal-footer">
-                <button type="button" id="common_confirm_ok" class="btn btn-primary" data-dismiss="modal">确认</button>
-                <button type="button" id="common_confirm_cancel" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button type="button" id="common_confirm_ok" class="btn btn-primary sureBtn" data-dismiss="modal">确认</button>
+                <button type="button" id="common_confirm_cancel" class="btn btn-default cancelBtn" data-dismiss="modal">取消</button>
 			</div>
 		</div><!-- /.modal-content -->
 	</div><!-- /.modal -->
@@ -143,6 +142,27 @@
 <script src="{% static 'bootstrap-table/js/bootstrap-table.min.js' %}"></script>
 <script src="{% static 'bootstrap-table/js/bootstrap-table-zh-CN.min.js' %}"></script>
 <script src="{% static 'user/js/formatter.js' %}"></script>
+<script type="text/javascript">
+    function ReAlert(title, content, Func) {
+        $('#alertModal .modal-title').text(title);
+        $('#alertModal .modal-body p').text(content);
+        $('#alertModal').modal('show');
+        $('#alertModal').on('hide.bs.modal', function () {
+            Func(content);
+        })
+    };
+    function ReConfirm(title, content, Func) {
+        $('#confirmModal .modal-title').text(title);
+        $('#confirmModal .modal-body p').text(content);
+        $('#confirmModal').modal('show');
+        $('#confirmModal .sureBtn').off('click').click(function() {
+            Func(true);
+        });
+        $('#confirmModal .cancelBtn').off('click').click(function() {
+            Func(false);
+        })
+    };
+</script>
 </body>
 {% block js %}
 {% endblock %}

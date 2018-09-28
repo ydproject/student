@@ -47,7 +47,7 @@
 				</button>
 				<h4 class="modal-title" id="commonModalLabel">请选择Excel文件</h4>
 			</div>
-			<div class="modal-body" id="commoModal-body">
+			<div class="modal-body" id="uploadModal-body">
                 <a href="~/Data/ExcelTemplate/Order.xlsx" class="form-control" style="border:none;">下载导入模板</a>
                 <input id="file-input" type="file" class="file" data-upload-url="/upload/">
             </div>
@@ -79,44 +79,90 @@
         });
     </script>
     <script>
-        // 删除学生信息
-        $("#btn_del").click(function () {
-            $('#commoModal-body').html("是否确认删除该学生信息？");
-            $('#common_confirm_model').modal({
-                keyboard: true
-            });
-            $('#common_confirm_ok').click(function(){
-                var students = $("input[name=id]:checked").serialize();
-                $.ajax({
-                    type: "post",
-                    url: "/delstudent/",
-                    dataType: "json",
-                    data:{
-                        studentsInfo: students
-                    },
-                    complete: function () {
-                    },
-                    success: function (data) {
-                        $('#myModal-body').html(data.msg);
-                        $('#myModal').modal({
-                            keyboard: true
-                        });
-                        if (data.status == 0) {
-                            $('#myModal').on('hide.bs.modal', function () {
-                                    location.href = '/studentsinfo/'
-                            })
+        $('#upload_confirm_all').click(function() {
+            ReConfirm("确认", '全量导入会覆盖所有的学生信息，是否继续？', function(r) {
+                if(r) {
+                    var filename = $(".file-caption-name").attr("title");
+                    var process = $(".kv-upload-progress .progress-bar").text()
+                    $.ajax({
+                        type: "post",
+                        url: "/importexcel/",
+                        dataType: "json",
+                        data: {
+                            filename: filename,
+                            type: "all",
+                            process: process
+                        },
+                        complete: function () {
+                        },
+                        success: function (data) {
+                            ReAlert('提示', data.msg, function(str) {
+                                location.href = '/studentsinfo/'
+                            });
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            alert(errorThrown);
                         }
-
-                    },
-                    error: function (XMLHttpRequest, textStatus, errorThrown) {
-                        alert(errorThrown);
-                    }
-                });
-            })
-            $('#common_confirm_cancel').click(function(){
-                location.href = '/studentsinfo/'
+                    });
+                } else {
+                }
             })
         });
+        $('#upload_confirm_inc').click(function() {
+            ReConfirm("确认", '增量导入会在已有学生信息中增加，是否继续？', function(r) {
+                if(r) {
+                    var filename = $("#file-input").val();
+                    $.ajax({
+                        type: "post",
+                        url: "/importexcel/",
+                        dataType: "json",
+                        data: {
+                            filename: filename,
+                            type: "inc"
+                        },
+                        complete: function () {
+                        },
+                        success: function (data) {
+                            ReAlert('提示', data.msg, function(str) {
+                                location.href = '/studentsinfo/'
+                            });
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            alert(errorThrown);
+                        }
+                    });
+                } else {
+                }
+            })
+        });
+    </script>
+    <script>
+        $('#btn_del').click(function() {
+            ReConfirm("确认", '是否确认删除该学生信息？', function(r) {
+                if(r) {
+                    var students = $("input[name=id]:checked").serialize();
+                    $.ajax({
+                        type: "post",
+                        url: "/delstudent/",
+                        dataType: "json",
+                        data: {
+                            studentsInfo: students
+                        },
+                        complete: function () {
+                        },
+                        success: function (data) {
+                            ReAlert('提示', data.msg, function(str) {
+                                location.href = '/studentsinfo/'
+                            });
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            alert(errorThrown);
+                        }
+                    });
+                } else {
+                }
+            })
+        })
     </script>
     <script>
         //获取申请列表
