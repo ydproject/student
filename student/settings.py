@@ -170,3 +170,9 @@ LOGGING = {
 LOCK_TIME_THRESHOLD = 300
 # 账户登录失败 几次 锁账户
 LOCK_CNT_THRESHOLD = 5
+
+# 用户上传文件的目录
+UPLOAD_PATH = os.path.join(BASE_DIR, "upload")
+
+# STUDENT EXCEL HEAD LIST
+HEAD_LIST = ['姓名', '联系电话', '身份证号码', '出生年月', '班级', '性别', '监护人姓名', '校车', '是否双流户籍', '是否大成都', '材料', '户籍详细地址', '备注']

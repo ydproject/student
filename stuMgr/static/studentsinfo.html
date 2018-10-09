@@ -48,7 +48,7 @@
 				<h4 class="modal-title" id="commonModalLabel">请选择Excel文件</h4>
 			</div>
 			<div class="modal-body" id="uploadModal-body">
-                <a href="~/Data/ExcelTemplate/Order.xlsx" class="form-control" style="border:none;">下载导入模板</a>
+                <a href="/static/studentsinfo.xlsx" download="studentsinfo.xlsx" class="form-control" style="border:none;">下载导入模板</a>
                 <input id="file-input" type="file" class="file" data-upload-url="/upload/">
             </div>
 			<div class="modal-footer">
@@ -111,14 +111,16 @@
         $('#upload_confirm_inc').click(function() {
             ReConfirm("确认", '增量导入会在已有学生信息中增加，是否继续？', function(r) {
                 if(r) {
-                    var filename = $("#file-input").val();
+                    var filename = $(".file-caption-name").attr("title");
+                    var process = $(".kv-upload-progress .progress-bar").text()
                     $.ajax({
                         type: "post",
                         url: "/importexcel/",
                         dataType: "json",
                         data: {
                             filename: filename,
-                            type: "inc"
+                            type: "inc",
+                            process: process
                         },
                         complete: function () {
                         },

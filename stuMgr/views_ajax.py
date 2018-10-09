@@ -10,6 +10,7 @@
 import datetime
 import simplejson as json
 import os
+import traceback
 
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
@@ -17,9 +18,11 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from django.db.models import Q
 from django.db import transaction
+import pandas as pd
 
 from .extend_json_encoder import ExtendJSONEncoder
 from .models import student, classes
+from .common import clear
 
 
 login_failure_counter = {}
@@ -220,10 +223,12 @@ def addstutodb(request):
 @csrf_exempt
 def upload(request):
     myFile = request.FILES['file_data']
+    upload_path = settings.UPLOAD_PATH
     if not myFile:
         return HttpResponse("no files for upload!")
     try:
-        destination = open(os.path.join(os.getcwd(), "upload", myFile.name), 'wb+')  # 打开特定的文件进行二进制的写操作
+        clear(upload_path)
+        destination = open(os.path.join(upload_path, myFile.name), 'wb+')  # 打开特定的文件进行二进制的写操作
         for chunk in myFile.chunks():  # 分块写入文件
             destination.write(chunk)
             destination.close()
@@ -246,8 +251,50 @@ def importexcel(request):
     filename = request.POST.get("filename", "").strip()
     type = request.POST.get("type", "").strip()
     process = request.POST.get("process", "").strip()
-    print(filename, type, process)
     result = {'status': 0, 'msg': '学生信息导入成功！', 'data': []}
+    print("********", process, type, filename)
+    if not filename:
+        result = {'status': 1, 'msg': '请选择需要导入的文件！', 'data': []}
+        return HttpResponse(json.dumps(result), content_type='application/json')
+    if not (filename.endswith(".xls") or filename.endswith(".xlsx")):
+        result = {'status': 1, 'msg': '请使用模板文件文件导入！', 'data': []}
+        return HttpResponse(json.dumps(result), content_type='application/json')
+    if process != "Done":
+        result = {'status': 1, 'msg': '请上传需要导入的文件！', 'data': []}
+        return HttpResponse(json.dumps(result), content_type='application/json')
+
+    class_dict = {class_i.class_name: class_i.id for class_i in classes.objects.all()}
+
+    try:
+        import_file = os.path.join(settings.UPLOAD_PATH, filename)
+        df = pd.read_excel(import_file)
+        df = df[settings.HEAD_LIST]
+        df = df.fillna("")
+        df[["身份证号码", "联系电话"]] = df[["身份证号码", "联系电话"]].applymap(str)
+        df[["班级"]] = df[["班级"]].applymap(class_dict.get)
+        fun = lambda datastr: datetime.datetime.strptime(datastr, '%Y-%m-%d')
+        df[["出生年月"]] = df[["出生年月"]].applymap(fun)
+    except Exception as e:
+        print(traceback.format_exc())
+        result = {'status': 1, 'msg': '上传的文件有误，请仔细确认！', 'data': []}
+        return HttpResponse(json.dumps(result), content_type='application/json')
+    try:
+        with transaction.atomic():
+            if type == "all":
+                student.objects.all().delete()
+            for i in range(len(df)):
+                df_i = df.iloc[i]
+                print(df_i)
+                student.objects.get_or_create(name=df_i["姓名"], tel_num=df_i["联系电话"], card_id=df_i["身份证号码"],
+                                              birthday=df_i["出生年月"], classid_id=df_i["班级"], sex=df_i["性别"],
+                                              fa_name=df_i["监护人姓名"], school_car=df_i["校车"], is_shuangliu=df_i["是否双流户籍"],
+                                              is_chengdu=df_i["是否大成都"], infos=df_i["材料"], address=df_i["户籍详细地址"],
+                                              remark=df_i["备注"])
+    except Exception as e:
+        print(traceback.format_exc())
+        result = {'status': 1, 'msg': '学生信息导入数据库有误，请联系管理员！', 'data': []}
+        return HttpResponse(json.dumps(result), content_type='application/json')
+
     return HttpResponse(json.dumps(result), content_type='application/json')
 
 

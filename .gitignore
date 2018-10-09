@@ -9,3 +9,5 @@
 *.sqlite3
 *.log
 *.sqlite3
+*.pyc
+*.pyc
