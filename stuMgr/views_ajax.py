@@ -21,7 +21,7 @@ from django.db import transaction
 import pandas as pd
 
 from .extend_json_encoder import ExtendJSONEncoder
-from .models import student, classes
+from .models import student, classes, PayMentInfo
 from .common import clear
 
 
@@ -118,6 +118,42 @@ def getstudentsinfo(request):
     rows = [row for row in listStudentInfo]
 
     result = {"total": StudentInfoCount, "rows": rows}
+    # 返回查询结果
+    return HttpResponse(json.dumps(result, cls=ExtendJSONEncoder, bigint_as_string=True),
+                        content_type='application/json')
+
+
+# 获取学生缴费信息列表
+@csrf_exempt
+def getmoneysinfo(request):
+    # 获取用户信息
+    loginUser = request.session.get('login_username', False)
+
+    limit = int(request.POST.get('limit'))
+    offset = int(request.POST.get('offset'))
+    limit = offset + limit
+
+    # 获取搜索参数
+    search = request.POST.get('search',"").strip()
+    if search is None:
+        search = ''
+
+    # 获取筛选参数
+    navStatus = request.POST.get('navStatus', "").strip()
+
+    # 全部学生缴费信息里面包含搜索条件
+    listMoneyInfo = PayMentInfo.objects.filter(termId__id=navStatus) \
+        .filter(Q(stuId__name__contains=search) | Q(stuId__card_id__contains=search) | Q(type__contains=search) | Q(action__contains=search) | Q(money__contains=search) | Q(status__contains=search))\
+        .order_by('-create_time')[offset:limit]\
+        .values("id", "stuId__name", "stuId__card_id", "type", 'action', 'money', 'status', 'remark')
+
+    MoneyInfoCount = PayMentInfo.objects.filter(termId__term_name=navStatus) \
+        .filter(Q(stuId__name__contains=search) | Q(stuId__card_id__contains=search) | Q(type__contains=search) | Q(action__contains=search) | Q(money__contains=search) | Q(status__contains=search)).count()
+
+    # QuerySet 序列化
+    rows = [row for row in listMoneyInfo]
+
+    result = {"total": MoneyInfoCount, "rows": rows}
     # 返回查询结果
     return HttpResponse(json.dumps(result, cls=ExtendJSONEncoder, bigint_as_string=True),
                         content_type='application/json')

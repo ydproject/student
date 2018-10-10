@@ -5,7 +5,7 @@ from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.shortcuts import render, get_object_or_404
 
-from .models import classes, student
+from .models import classes, student, TermInfo
 # Create your views here.
 
 
@@ -19,6 +19,12 @@ def studentsinfo(request):
     class_names = classes.objects.all()
     context = {'currentMenu': 'studentsinfo', 'classes': class_names}
     return render(request, 'studentsinfo.html', context)
+
+# 学费信息页面
+def moneysinfo(request):
+    terminfos = TermInfo.objects.all()
+    context = {'currentMenu': 'moneysinfo', 'terminfos': terminfos}
+    return render(request, 'moneyinfo.html', context)
 
 # 退出登录
 def logout(request):

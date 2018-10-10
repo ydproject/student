@@ -11,6 +11,7 @@ urlpatterns = [
     url(r'^logout/$', views.logout, name='logout'),
     url(r'^addstudent/$', views.addstudent, name='addstudent'),
     url(r'^studetail/(?P<stuId>[0-9]+)/$', views.studetail, name='studetail'),
+    url(r'^moneysinfo/$', views.moneysinfo, name='moneysinfo'),
 
     url(r'^authenticate/$', views_ajax.authenticateEntry, name='authenticate'),
     url(r'^getstudentsinfo/$', views_ajax.getstudentsinfo, name='getstudentsinfo'),
@@ -18,5 +19,6 @@ urlpatterns = [
     url(r'^addstutodb/$', views_ajax.addstutodb, name='addstutodb'),
     url(r'^upload/$', views_ajax.upload, name='upload'),
     url(r'^importexcel/$', views_ajax.importexcel, name='importexcel'),
+    url(r'^getmoneysinfo/$', views_ajax.getmoneysinfo, name='getmoneysinfo'),
 ]
 
