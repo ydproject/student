@@ -4,7 +4,7 @@ from django.contrib.auth.admin import UserAdmin
 
 
 # Register your models here.
-from .models import users, classes, student, Payment_Plan, Payment_item, PayMentInfo, PreMent, Flowing, TermInfo
+from .models import users, classes, student, Payment_Plan, Payment_item, PayMentInfo, PreMent, Flowing, TermInfo, student_term_info
 
 
 @admin.register(users)
@@ -25,6 +25,12 @@ class TermInfoAdmin(admin.ModelAdmin):
 class classesAdmin(admin.ModelAdmin):
     list_display = ('class_name', 'teacher_name', 'class_rom')
     search_fields = ['class_name', 'teacher_name', 'class_rom']
+
+
+@admin.register(student_term_info)
+class StudentTermAdmin(admin.ModelAdmin):
+    list_display = ('stuId', 'termId', 'status')
+    search_fields = ['stuId', 'termId', 'status']
 
 
 @admin.register(student)

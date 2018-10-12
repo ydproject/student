@@ -71,6 +71,23 @@ class TermInfo(models.Model):
         ordering = ["-id"]
 
 
+class student_term_info(models.Model):
+    stuId = models.ForeignKey('student', to_field='id', verbose_name='学号')
+    termId = models.ForeignKey('TermInfo', to_field='id', verbose_name=u"学期")
+    status = models.CharField(max_length=20, verbose_name=u"报名情况", choices=(('已报到', '已报到'), ('未报到', '未报到')),
+                              default="未报到")
+    create_time = models.DateTimeField('创建时间', auto_now_add=True)
+    update_time = models.DateTimeField('更新时间', auto_now=True)
+
+    def __str__(self):
+        return str(self.stuId) + "_" + self.termId
+
+    class Meta:
+        verbose_name = u'学生报名信息'
+        verbose_name_plural = u'学生报名信息'
+        ordering = ["-id"]
+
+
 class Payment_item(models.Model):
     audit_id = models.AutoField(primary_key=True)
     type_info = models.CharField(max_length=20, verbose_name=u"种类")

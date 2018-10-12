@@ -5,7 +5,9 @@ from django.conf import settings
 leftMenuBtnsCommon = (
     {'key': 'studentsinfo', 'name': '学生信息', 'url': '/studentsinfo/', 'class': 'glyphicon glyphicon-home',
      'display': True},
-    {'key': 'moneysinfo', 'name': '缴费信息', 'url': '/moneysinfo/', 'class': 'glyphicon glyphicon-eye-open',
+    {'key': 'register', 'name': '学生报名/缴费', 'url': '/register/', 'class': 'glyphicon glyphicon-align-right',
+     'display': True},
+    {'key': 'moneysinfo', 'name': '缴费明细', 'url': '/moneysinfo/', 'class': 'glyphicon glyphicon-eye-open',
      'display': True},
 )
 

@@ -21,7 +21,7 @@ from django.db import transaction
 import pandas as pd
 
 from .extend_json_encoder import ExtendJSONEncoder
-from .models import student, classes, PayMentInfo
+from .models import student, classes, PayMentInfo, student_term_info
 from .common import clear
 
 
@@ -106,7 +106,7 @@ def getstudentsinfo(request):
                            .order_by('-create_time')[offset:limit]\
             .values("id", 'name', 'tel_num', 'card_id', 'birthday', 'classid__class_name', 'sex',
                    'fa_name', 'school_car', 'is_shuangliu', 'is_chengdu', 'infos', 'address', 'remark')
-        StudentInfoCount = student.objects.filter().count()
+        StudentInfoCount = student.objects.filter(Q(name__contains=search)|Q(tel_num__contains=search)|Q(card_id__contains=search)|Q(sex=search)|Q(fa_name__contains=search)|Q(address__contains=search)).count()
     else:
         listStudentInfo = student.objects.filter(classid__id=navStatus).filter(Q(name__contains=search)|Q(tel_num__contains=search)|Q(card_id__contains=search)|Q(sex=search)|Q(fa_name__contains=search)|Q(address__contains=search))\
                                                                          .order_by('-create_time')[offset:limit].\
@@ -116,6 +116,65 @@ def getstudentsinfo(request):
 
     # QuerySet 序列化
     rows = [row for row in listStudentInfo]
+
+    result = {"total": StudentInfoCount, "rows": rows}
+    # 返回查询结果
+    return HttpResponse(json.dumps(result, cls=ExtendJSONEncoder, bigint_as_string=True),
+                        content_type='application/json')
+
+
+# 获取学生报名信息列表
+@csrf_exempt
+def getregister(request):
+    # 获取用户信息
+    loginUser = request.session.get('login_username', False)
+
+    limit = int(request.POST.get('limit'))
+    offset = int(request.POST.get('offset'))
+    limit = offset + limit
+
+    # 获取搜索参数
+    search = request.POST.get('search',"").strip()
+    if search is None:
+        search = ''
+
+    # 获取筛选参数
+    sel_term = request.POST.get('sel_term',"").strip()
+    sel_class = request.POST.get('sel_class', "").strip()
+    sel_register = request.POST.get('sel_register', "").strip()
+
+
+    # 全部学生信息里面包含搜索条件
+    listStudentInfo = student.objects.filter(Q(name__contains=search)|Q(tel_num__contains=search)|Q(card_id__contains=search)|Q(classid__class_name__contains=sel_class))\
+                           .order_by('-create_time')[offset:limit]\
+            .values("id", 'name', 'tel_num', 'card_id', 'birthday', 'classid__class_name', 'sex',
+                   'fa_name', 'school_car', 'is_shuangliu', 'is_chengdu', 'infos', 'address')
+    StudentInfoCount = student.objects.filter(Q(name__contains=search)|Q(tel_num__contains=search)|Q(card_id__contains=search)|Q(classid__class_name__contains=sel_class)).count()
+
+    # QuerySet 序列化
+    rows_all = []
+    rows_register = []
+    rows_unregister = []
+    for row in listStudentInfo:
+        tmp = row.copy()
+        stuid = row["id"]
+        listStuTermInfo = student_term_info.objects.filter(stuId=stuid).filter(Q(termId__term_name__contains=sel_term)).values("status")
+        if listStuTermInfo:
+            tmp["status"] = listStuTermInfo[0]["status"]
+            rows_register.append(tmp)
+        else:
+            tmp["status"] = ""
+            rows_unregister.append(tmp)
+        rows_all.append(tmp)
+
+    if sel_register == "all":
+        rows = rows_all
+    elif sel_register == "已报到":
+        rows = rows_register
+    elif sel_register == "未报到":
+        rows = rows_unregister
+    else:
+        rows = []
 
     result = {"total": StudentInfoCount, "rows": rows}
     # 返回查询结果
@@ -142,12 +201,12 @@ def getmoneysinfo(request):
     navStatus = request.POST.get('navStatus', "").strip()
 
     # 全部学生缴费信息里面包含搜索条件
-    listMoneyInfo = PayMentInfo.objects.filter(termId__id=navStatus) \
+    listMoneyInfo = PayMentInfo.objects.filter(termId__id=navStatus)\
         .filter(Q(stuId__name__contains=search) | Q(stuId__card_id__contains=search) | Q(type__contains=search) | Q(action__contains=search) | Q(money__contains=search) | Q(status__contains=search))\
         .order_by('-create_time')[offset:limit]\
         .values("id", "stuId__name", "stuId__card_id", "type", 'action', 'money', 'status', 'remark')
 
-    MoneyInfoCount = PayMentInfo.objects.filter(termId__term_name=navStatus) \
+    MoneyInfoCount = PayMentInfo.objects.filter(termId__id=navStatus)\
         .filter(Q(stuId__name__contains=search) | Q(stuId__card_id__contains=search) | Q(type__contains=search) | Q(action__contains=search) | Q(money__contains=search) | Q(status__contains=search)).count()
 
     # QuerySet 序列化

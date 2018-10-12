@@ -26,6 +26,13 @@ def moneysinfo(request):
     context = {'currentMenu': 'moneysinfo', 'terminfos': terminfos}
     return render(request, 'moneyinfo.html', context)
 
+# 学生报名/缴费信息页面
+def register(request):
+    terminfos = TermInfo.objects.all()
+    class_names = classes.objects.all()
+    context = {'currentMenu': 'register', 'terminfos': terminfos, 'classes': class_names}
+    return render(request, 'register.html', context)
+
 # 退出登录
 def logout(request):
     if request.session.get('login_username', False):
