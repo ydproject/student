@@ -309,11 +309,11 @@
                 },
                 success: function (data) {
                     $('#myModal-body').html(data.msg);
-                    $('#myModal').modal({
+                    $('#alertModal').modal({
                         keyboard: true
                     });
                     if (data.status == 0) {
-                        $('#myModal').on('hide.bs.modal', function () {
+                        $('#alertModal').on('hide.bs.modal', function () {
                                 location.href = '/studentsinfo/'
                         })
                     }

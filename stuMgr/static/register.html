@@ -27,21 +27,9 @@
         </div>
         <div class="form-group">
             <button id="btn_add" type="button" class="btn btn-default"
-                    onclick="window.location.href='/addstudent/'">
+                    onclick="window.location.href='/addstudent?type=sign'">
                 <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-                添加学生
-            </button>
-        </div>
-        <div class="form-group">
-            <button id="btn_del" type="button" class="btn btn-default">
-                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                删除学生
-            </button>
-        </div>
-        <div class="form-group">
-            <button id="btn_import" type="button" class="btn btn-default">
-                <span class="glyphicon glyphicon-upload" aria-hidden="true"></span>
-                导入学生
+                新生报名
             </button>
         </div>
     </div>
@@ -51,27 +39,6 @@
                style="table-layout:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
         </table>
     </div>
-<!-- 模态框上传（Modal） -->
-<div class="modal fade" id="upload_model" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-					&times;
-				</button>
-				<h4 class="modal-title" id="commonModalLabel">请选择Excel文件</h4>
-			</div>
-			<div class="modal-body" id="uploadModal-body">
-                <a href="/static/studentsinfo.xlsx" download="studentsinfo.xlsx" class="form-control" style="border:none;">下载导入模板</a>
-                <input id="file-input" type="file" class="file" data-upload-url="/upload/">
-            </div>
-			<div class="modal-footer">
-                <button type="button" id="upload_confirm_all" class="btn btn-primary" data-dismiss="modal">全量导入</button>
-                <button type="button" id="upload_confirm_inc" class="btn btn-default" data-dismiss="modal">增量导入</button>
-			</div>
-		</div><!-- /.modal-content -->
-	</div><!-- /.modal -->
-</div>
 {% endblock content %}
 {% block js %}
     {% load staticfiles %}
@@ -84,102 +51,6 @@
     <script src="{% static 'bootstrap-fileinput-master/js/plugins/sortable.js' %}" type="text/javascript"></script>
     <script src="{% static 'bootstrap-fileinput-master/js/locales/fr.js' %}" type="text/javascript"></script>
     <script src="{% static 'bootstrap-fileinput-master/themes/fa/theme.js' %}" type="text/javascript"></script>
-    <script>
-        // 导入学生信息
-        $("#btn_import").click(function () {
-            $('#upload_model').modal({
-                keyboard: true
-            });
-        });
-    </script>
-    <script>
-        $('#upload_confirm_all').click(function() {
-            ReConfirm("确认", '全量导入会覆盖所有的学生信息，是否继续？', function(r) {
-                if(r) {
-                    var filename = $(".file-caption-name").attr("title");
-                    var process = $(".kv-upload-progress .progress-bar").text()
-                    $.ajax({
-                        type: "post",
-                        url: "/importexcel/",
-                        dataType: "json",
-                        data: {
-                            filename: filename,
-                            type: "all",
-                            process: process
-                        },
-                        complete: function () {
-                        },
-                        success: function (data) {
-                            ReAlert('提示', data.msg, function(str) {
-                                location.href = '/studentsinfo/'
-                            });
-                        },
-                        error: function (XMLHttpRequest, textStatus, errorThrown) {
-                            alert(errorThrown);
-                        }
-                    });
-                } else {
-                }
-            })
-        });
-        $('#upload_confirm_inc').click(function() {
-            ReConfirm("确认", '增量导入会在已有学生信息中增加，是否继续？', function(r) {
-                if(r) {
-                    var filename = $(".file-caption-name").attr("title");
-                    var process = $(".kv-upload-progress .progress-bar").text()
-                    $.ajax({
-                        type: "post",
-                        url: "/importexcel/",
-                        dataType: "json",
-                        data: {
-                            filename: filename,
-                            type: "inc",
-                            process: process
-                        },
-                        complete: function () {
-                        },
-                        success: function (data) {
-                            ReAlert('提示', data.msg, function(str) {
-                                location.href = '/studentsinfo/'
-                            });
-                        },
-                        error: function (XMLHttpRequest, textStatus, errorThrown) {
-                            alert(errorThrown);
-                        }
-                    });
-                } else {
-                }
-            })
-        });
-    </script>
-    <script>
-        $('#btn_del').click(function() {
-            ReConfirm("确认", '是否确认删除该学生信息？', function(r) {
-                if(r) {
-                    var students = $("input[name=id]:checked").serialize();
-                    $.ajax({
-                        type: "post",
-                        url: "/delstudent/",
-                        dataType: "json",
-                        data: {
-                            studentsInfo: students
-                        },
-                        complete: function () {
-                        },
-                        success: function (data) {
-                            ReAlert('提示', data.msg, function(str) {
-                                location.href = '/studentsinfo/'
-                            });
-                        },
-                        error: function (XMLHttpRequest, textStatus, errorThrown) {
-                            alert(errorThrown);
-                        }
-                    });
-                } else {
-                }
-            })
-        })
-    </script>
     <script>
         //获取申请列表
         function get_sqlauditlist() {
@@ -237,7 +108,7 @@
                     title: '姓名',
                     field: 'name',
                     formatter: function (value, row, index) {
-                        return "<a href=\"/studetail/" + row.id + "/\">" + value + "</a>"
+                        return "<a href=\"/addmoney?flag=edit&id=" + row.id + "&term=" + $("#sel_term").val() + "\">" + value + "</a>"
                     }
                 }, {
                     title: '联系电话',

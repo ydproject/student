@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="row clearfix">
+
+            <form id="form-submitstu"  class="form-horizontal" role="form">
+                {% csrf_token %}
+                <div class="fields ">
+                    <div class="row">
+                        <div class="control-group  field-name">
+                            <div class="col-md-12 form-group ">
+                                <div class="control-label col-md-3">
+                                    <label class="required" for="id_term">学期:</label>
+                                </div>
+                                <div class="controls col-md-9">
+                                    <input class="vTextField" id="id_term" maxlength="50" name="term" data-name="学期" type="text" data="{{TermInfo.id}}" value="{{TermInfo.term_name}}" disabled>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="control-group  field-name">
+                            <div class="col-md-12 form-group ">
+                                <div class="control-label col-md-3">
+                                    <label class="required" for="id_name">姓名:</label>
+                                </div>
+                                <div class="controls col-md-9">
+                                    <input class="vTextField" id="id_name" maxlength="50" name="name" data-name="姓名" type="text" data="{{studentInfo.id}}" value="{{studentInfo.name}}" disabled>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% for payment in PayMents %}
+                    <div class="row">
+                        <div class="control-group  field-name">
+                            <div class="col-md-30 form-group ">
+                                <div class="control-label col-md-3">
+                                    <label class="required">{{payment.f_type}}:</label>
+                                </div>
+                                <div class="controls col-md-3">
+                                    {% for f_action in payment.f_actions %}
+                                    <label class="required">{{f_action.action}}:</label>
+                                        {% if allowed == "no" and f_action.edit == 1 %}
+                                        <select id="{{f_action.f_id}}" name="actions" data-name="缴费项目" data-placeholder="" disabled>
+                                        {% else %}
+                                        <select id="{{f_action.f_id}}" name="actions" data-name="缴费项目" data-placeholder="" required>
+                                        {% endif %}
+                                            <option value="{{payment.f_type}}_{{f_action.action}}_0">0</option>
+                                            {% for f_status in f_action.status %}
+                                            {% if f_status.status == 1 %}
+                                            <option value="{{payment.f_type}}_{{f_action.action}}_{{f_status.money}}" selected="selected">{{f_status.money}}</option>
+                                            {% else %}
+                                            <option value="{{payment.f_type}}_{{f_action.action}}_{{f_status.money}}">{{f_status.money}}</option>
+                                            {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                        <label class="required"></label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <div class="row">
+                        <div class="control-group  field-remark">
+                            <div class="col-md-12 form-group ">
+                                <div class="control-label col-md-3">
+                                    <label class="required" for="id_remark">备注:</label>
+                                </div>
+                                <div class="controls col-md-9">
+                                    <textarea class="vLargeTextField" cols="40" id="id_remark" name="remark" data-name="备注" rows="10"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="control-group  field-confirm">
+                            <div class="col-md-12 form-group ">
+                                <div class="control-label col-md-3">
+                                </div>
+                                <div class="controls col-md-9">
+                                    <button type="reset" id="btn-reset" class="btn btn-warning">清空选项</button>
+                                    <input id="btn-submitstu" type="button" class="btn btn-success" value="提交信息"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock content %}
+{% block js %}
+    {% load staticfiles %}
+    <link href="{% static 'fileinput/css/fileinput.min.css' %}" rel="stylesheet">
+    <script src="{% static 'ace/ace.js' %}"></script>
+    <script src="{% static 'ace/ext-language_tools.js' %}"></script>
+    <script src="{% static 'ace/mode-sql.js' %}"></script>
+    <script src="{% static 'ace/theme-github.js' %}"></script>
+    <script src="{% static 'ace/snippets/sql.js' %}"></script>
+    <script src="{% static 'ace/ace_init.js' %}"></script>
+    <script src="{% static 'fileinput/js/fileinput.min.js' %}"></script>
+    <script src="{% static 'fileinput/js/locales/zh.js' %}"></script>
+    <script src="{% static 'user/js/autoreview.js' %}"></script>
+    <script src="{% static 'dist/js/sql-formatter.min.js' %}"></script>
+    <script src="{% static 'laydate/laydate.js' %}"></script> <!-- 日期控件 -->
+    <script>
+        laydate.render({
+          elem: '#id_birthday' //指定元素
+        });
+    </script>
+    <!--validate -->
+    <script>
+        function validateForm(element) {
+            var result = true;
+            element.find('[required]').each(
+                function () {
+                    var fieldElement = $(this);
+                    //如果为null则设置为''
+                    var value = fieldElement.val() || '';
+                    if (value) {
+                        value = value.trim();
+                    }
+                    if (!value || value === fieldElement.attr('data-placeholder')) {
+                        ReAlert('提示', (fieldElement.attr('data-name') || this.name) + "不能为空！", function(str) {
+                            var flag = true;
+                        });
+                        result = false;
+                        return result;
+                    }
+                }
+            );
+            return result;
+        }
+
+        function addstutodb() {
+            var remark = $('#id_remark');
+            {% for payment in PayMents %}
+            {% for f_action in payment.f_actions %}
+            var {{f_action.f_id}} = $('#{{f_action.f_id}}');
+            {% endfor %}
+            {% endfor %}
+            $.ajax({
+                type: "post",
+                url: "/addmoneytodb/",
+                dataType: "json",
+                data: {
+                    stuId : {{ studentInfo.id }},
+                    termId : {{ TermInfo.id }},
+                    {% for payment in PayMents %}
+                    {% for f_action in payment.f_actions %}
+                    {{f_action.f_id}}: {{f_action.f_id}}.val(),
+                    {% endfor %}
+                    {% endfor %}
+                    index : {{index}},
+                    remark : remark.val(),
+                },
+                complete: function () {
+                },
+                success: function (data) {
+                    ReAlert('提示', data.msg, function(str) {
+                        if (data.status == 0) {
+                            location.href = '/register/'
+                        }
+                    });
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(errorThrown);
+                }
+            });
+        };
+
+        $("#btn-submitstu").click(function () {
+            //获取form对象，判断输入，通过则提交
+            var formSubmit = $("#form-submitstu");
+            if (validateForm(formSubmit)) {
+                addstutodb();
+                }
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
+            $(document).keydown(function(event) {
+                //keycode==13为回车键
+                if (event.keyCode == 13) {
+                    $('#btn-submitstu').click();
+                }
+            });
+        });
+    </script>
+{% endblock %}

@@ -5,7 +5,7 @@ from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.shortcuts import render, get_object_or_404
 
-from .models import classes, student, TermInfo
+from .models import classes, student, TermInfo, Payment_Plan, users, PayMentInfo
 # Create your views here.
 
 
@@ -42,12 +42,82 @@ def logout(request):
 
 # 新增新生信息界面
 def addstudent(request):
+    add_type = request.GET.get("type", "")
     classes_info = classes.objects.all().order_by('class_name')
     if len(classes_info) == 0:
         return HttpResponseRedirect('/admin/stuMgr/classes/add/')
 
-    context = {'currentMenu': 'studentsinfo', 'AllClassesInfo': classes_info}
+    if add_type == "sign":
+        redirect_url = '/addmoney/'
+    else:
+        redirect_url = '/studentsinfo/'
+
+    context = {'currentMenu': 'studentsinfo', 'AllClassesInfo': classes_info, "redirect_url": redirect_url}
     return render(request, 'addstudent.html', context)
+
+
+# 新增缴费信息界面
+def addmoney(request):
+    stuId = request.GET.get("id", "")
+    flag = request.GET.get("flag", "")
+    termName = request.GET.get("term", "")
+    studentInfo = get_object_or_404(student, id=stuId)
+    # 获取用户信息
+    loginUser = request.session.get('login_username', False)
+    loginUserOb = users.objects.get(username=loginUser)
+    if loginUserOb.is_superuser == 1 or loginUserOb.role == '管理员':
+        allowed = "yes"
+    else:
+        allowed = "no"
+    payMentPlan = Payment_Plan.objects.filter(flag=True).values("plan__type_info", "plan__action", "plan__money")
+    payMentPlan = [{'plan__type_info': payInfo['plan__type_info'], 'plan__action': payInfo['plan__action'].split(","),
+                    'plan__money': payInfo['plan__money'].split(",")} for payInfo in payMentPlan]
+    print(payMentPlan)
+    if flag == "add":
+        termInfos = TermInfo.objects.all().values()
+        termInfo = termInfos[0]
+        OldPayMentInfo = []
+    elif flag == "edit":
+        termInfo = get_object_or_404(TermInfo, term_name=termName)
+        OldPayMentInfo = PayMentInfo.objects.filter(stuId=stuId, termId__term_name=termInfo).values("type", "action", "money", "status")
+        print(OldPayMentInfo)
+    else:
+        return HttpResponseRedirect(reverse('stuMgr:register'))
+
+    payMents = []
+    i = 0
+    for payMent in payMentPlan:
+        temp = {}
+        temp["f_type"] = payMent["plan__type_info"]
+        temp["f_actions"] = []
+        for f_action in payMent["plan__action"]:
+            t_action = {}
+            i = i + 1
+            t_action["f_id"] = "f_id_" + str(i)
+            t_action["action"] = f_action
+            t_action["edit"] = 0
+            t_action["status"] = []
+            for f_money in payMent["plan__money"]:
+                t_money = {}
+                t_money["money"] = f_money
+                t_money["status"] = 0
+                for oldpayinfo in OldPayMentInfo:
+                    if oldpayinfo["type"] == temp["f_type"] and oldpayinfo["action"] == f_action and oldpayinfo["status"] == "已缴费" and oldpayinfo["money"] == float(f_money):
+                        t_money["status"] = 1
+                        t_action["edit"] = 1
+                t_action["status"].append(t_money)
+            temp["f_actions"].append(t_action)
+        payMents.append(temp)
+    print(payMents)
+
+    context = {'currentMenu': 'register',
+               'TermInfo': termInfo,
+               "PayMents": payMents,
+               "studentInfo": studentInfo,
+               "allowed": allowed,
+               "index" : i,
+               }
+    return render(request, 'addmoney.html', context)
 
 
 # 编辑学生详细信息

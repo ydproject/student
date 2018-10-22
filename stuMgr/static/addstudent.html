@@ -26,7 +26,7 @@
                                         <label class="required" for="id_tel_num">联系电话:</label>
                                     </div>
                                     <div class="controls col-md-9">
-                                            <input class="vTextField" id="id_tel_num" maxlength="50" name="tel_num" data-name="联系电话" type="text" required>
+                                        <input class="vTextField" id="id_tel_num" maxlength="50" name="tel_num" data-name="联系电话" type="text" required>
                                     </div>
                                 </div>
                             </div>
@@ -231,9 +231,8 @@
                         value = value.trim();
                     }
                     if (!value || value === fieldElement.attr('data-placeholder')) {
-                        $('#myModal-body').html((fieldElement.attr('data-name') || this.name) + "不能为空！");
-                        $('#myModal').modal({
-                            keyboard: true
+                        ReAlert('提示', (fieldElement.attr('data-name') || this.name) + "不能为空！", function(str) {
+                            var flag = true;
                         });
                         result = false;
                         return result;
@@ -279,15 +278,11 @@
                 complete: function () {
                 },
                 success: function (data) {
-                    $('#myModal-body').html(data.msg);
-                    $('#myModal').modal({
-                        keyboard: true
+                    ReAlert('提示', data.msg, function(str) {
+                        if (data.status == 0) {
+                            location.href = '{{redirect_url}}' + '?flag=add&id=' + data.data
+                        }
                     });
-                    if (data.status == 0) {
-                        $('#myModal').on('hide.bs.modal', function () {
-                                location.href = '/studentsinfo/'
-                        })
-                    }
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
                     alert(errorThrown);

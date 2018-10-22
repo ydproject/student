@@ -220,7 +220,7 @@
                     title: '姓名',
                     field: 'stuId__name',
                     formatter: function (value, row, index) {
-                        return "<a href=\"/studetail/" + row.id + "/\">" + value + "</a>"
+                        return "<a href=\"/addmoney?flag=edit&id=" + row.id + "&term=" + $("#navStatus").val() + "\">" + value + "</a>"
                     }
                 }, {
                     title: '身份证号码',
@@ -237,6 +237,9 @@
                 },{
                     title: '缴费情况',
                     field: 'status'
+                },{
+                    title: '责任人',
+                    field: 'person'
                 },{
                     title: '备注',
                     field: 'remark'

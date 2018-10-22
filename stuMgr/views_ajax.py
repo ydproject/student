@@ -16,12 +16,13 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 from django.conf import settings
 from django.contrib.auth import authenticate
+from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.db import transaction
 import pandas as pd
 
 from .extend_json_encoder import ExtendJSONEncoder
-from .models import student, classes, PayMentInfo, student_term_info
+from .models import student, classes, PayMentInfo, student_term_info, TermInfo
 from .common import clear
 
 
@@ -102,17 +103,17 @@ def getstudentsinfo(request):
 
     # 全部学生信息里面包含搜索条件
     if navStatus == 'all':
-        listStudentInfo = student.objects.filter(Q(name__contains=search)|Q(tel_num__contains=search)|Q(card_id__contains=search)|Q(sex=search)|Q(fa_name__contains=search)|Q(address__contains=search))\
+        listStudentInfo = student.objects.filter(Q(name__contains=search)|Q(tel_num__contains=search)|Q(card_id__contains=search)|Q(sex=search)|Q(fa_name__contains=search)|Q(address__contains=search)|Q(person__contains=search))\
                            .order_by('-create_time')[offset:limit]\
             .values("id", 'name', 'tel_num', 'card_id', 'birthday', 'classid__class_name', 'sex',
-                   'fa_name', 'school_car', 'is_shuangliu', 'is_chengdu', 'infos', 'address', 'remark')
-        StudentInfoCount = student.objects.filter(Q(name__contains=search)|Q(tel_num__contains=search)|Q(card_id__contains=search)|Q(sex=search)|Q(fa_name__contains=search)|Q(address__contains=search)).count()
+                   'fa_name', 'school_car', 'is_shuangliu', 'is_chengdu', 'infos', 'address', 'person', 'remark')
+        StudentInfoCount = student.objects.filter(Q(name__contains=search)|Q(tel_num__contains=search)|Q(card_id__contains=search)|Q(sex=search)|Q(fa_name__contains=search)|Q(address__contains=search)|Q(person__contains=search)).count()
     else:
-        listStudentInfo = student.objects.filter(classid__id=navStatus).filter(Q(name__contains=search)|Q(tel_num__contains=search)|Q(card_id__contains=search)|Q(sex=search)|Q(fa_name__contains=search)|Q(address__contains=search))\
+        listStudentInfo = student.objects.filter(classid__id=navStatus).filter(Q(name__contains=search)|Q(tel_num__contains=search)|Q(card_id__contains=search)|Q(sex=search)|Q(fa_name__contains=search)|Q(address__contains=search)|Q(person__contains=search))\
                                                                          .order_by('-create_time')[offset:limit].\
             values("id", 'name', 'tel_num', 'card_id', 'birthday', 'classid__class_name', 'sex',
-                   'fa_name', 'school_car', 'is_shuangliu', 'is_chengdu', 'infos', 'address', 'remark')
-        StudentInfoCount = student.objects.filter(classid__id=navStatus).filter(Q(name__contains=search)|Q(tel_num__contains=search)|Q(card_id__contains=search)|Q(sex=search)|Q(fa_name__contains=search)|Q(address__contains=search)).count()
+                   'fa_name', 'school_car', 'is_shuangliu', 'is_chengdu', 'infos', 'address', 'person', 'remark')
+        StudentInfoCount = student.objects.filter(classid__id=navStatus).filter(Q(name__contains=search)|Q(tel_num__contains=search)|Q(card_id__contains=search)|Q(sex=search)|Q(fa_name__contains=search)|Q(address__contains=search)|Q(person__contains=search)).count()
 
     # QuerySet 序列化
     rows = [row for row in listStudentInfo]
@@ -137,7 +138,6 @@ def getregister(request):
     search = request.POST.get('search',"").strip()
     if search is None:
         search = ''
-
     # 获取筛选参数
     sel_term = request.POST.get('sel_term',"").strip()
     sel_class = request.POST.get('sel_class', "").strip()
@@ -145,11 +145,13 @@ def getregister(request):
 
 
     # 全部学生信息里面包含搜索条件
-    listStudentInfo = student.objects.filter(Q(name__contains=search)|Q(tel_num__contains=search)|Q(card_id__contains=search)|Q(classid__class_name__contains=sel_class))\
+    listStudentInfo = student.objects.filter(Q(classid__class_name__contains=sel_class)).filter(Q(name__contains=search)|Q(tel_num__contains=search)|Q(card_id__contains=search))\
                            .order_by('-create_time')[offset:limit]\
             .values("id", 'name', 'tel_num', 'card_id', 'birthday', 'classid__class_name', 'sex',
                    'fa_name', 'school_car', 'is_shuangliu', 'is_chengdu', 'infos', 'address')
-    StudentInfoCount = student.objects.filter(Q(name__contains=search)|Q(tel_num__contains=search)|Q(card_id__contains=search)|Q(classid__class_name__contains=sel_class)).count()
+    StudentInfoCount = student.objects.filter(Q(classid__class_name__contains=sel_class)).filter(Q(name__contains=search)|Q(tel_num__contains=search)|Q(card_id__contains=search)).count()
+
+    print(StudentInfoCount)
 
     # QuerySet 序列化
     rows_all = []
@@ -202,12 +204,12 @@ def getmoneysinfo(request):
 
     # 全部学生缴费信息里面包含搜索条件
     listMoneyInfo = PayMentInfo.objects.filter(termId__id=navStatus)\
-        .filter(Q(stuId__name__contains=search) | Q(stuId__card_id__contains=search) | Q(type__contains=search) | Q(action__contains=search) | Q(money__contains=search) | Q(status__contains=search))\
+        .filter(Q(stuId__name__contains=search) | Q(stuId__card_id__contains=search) | Q(type__contains=search) | Q(action__contains=search) | Q(money__contains=search) | Q(status__contains=search)|Q(person__contains=search))\
         .order_by('-create_time')[offset:limit]\
-        .values("id", "stuId__name", "stuId__card_id", "type", 'action', 'money', 'status', 'remark')
+        .values("id", "stuId__name", "stuId__card_id", "type", 'action', 'money', 'status', 'person', 'remark')
 
     MoneyInfoCount = PayMentInfo.objects.filter(termId__id=navStatus)\
-        .filter(Q(stuId__name__contains=search) | Q(stuId__card_id__contains=search) | Q(type__contains=search) | Q(action__contains=search) | Q(money__contains=search) | Q(status__contains=search)).count()
+        .filter(Q(stuId__name__contains=search) | Q(stuId__card_id__contains=search) | Q(type__contains=search) | Q(action__contains=search) | Q(money__contains=search) | Q(status__contains=search)|Q(person__contains=search)).count()
 
     # QuerySet 序列化
     rows = [row for row in listMoneyInfo]
@@ -250,7 +252,8 @@ def delstudent(request):
 @csrf_exempt
 def addstutodb(request):
     id = request.POST.get('id', '').strip()
-    print(id)
+    # 获取用户信息
+    loginUser = request.session.get('login_username', False)
     name = request.POST.get('name', '').strip()
     tel_num = request.POST.get('tel_num', '').strip()
     card_id = request.POST.get('card_id', '').strip()
@@ -264,7 +267,7 @@ def addstutodb(request):
     infos = request.POST.get('infos', '').strip()
     address = request.POST.get('address', '').strip()
     remark = request.POST.get('remark', '').strip()
-    result = {'status': 0, 'msg': '添加学生信息成功！', 'data': []}
+    result = {'status': 0, 'msg': '添加学生信息成功！', 'data': ""}
 
     if len(tel_num) != 11:
         result['status'] = 1
@@ -290,6 +293,7 @@ def addstutodb(request):
             Student.is_chengdu = is_chengdu
             Student.infos = infos
             Student.address = address
+            Student.person = loginUser
             Student.remark = remark
             Student.save()
             result["msg"] = "编辑学生信息成功!"
@@ -299,8 +303,9 @@ def addstutodb(request):
                 result['msg'] = '该身份证号码的学生已存在!'
                 return HttpResponse(json.dumps(result), content_type='application/json')
             Student = student(name=name,tel_num=tel_num, card_id=card_id, birthday=birthday, classid_id=classid, sex=sex, fa_name=fa_name,
-                school_car=school_car, is_shuangliu=is_shuangliu, is_chengdu=is_chengdu, infos=infos, address=address, remark=remark)
+                school_car=school_car, is_shuangliu=is_shuangliu, is_chengdu=is_chengdu, infos=infos, address=address, person=loginUser, remark=remark)
             Student.save()
+            id = student.objects.all()[0].id
     except Exception as msg:
         import traceback
         print(traceback.format_exc())
@@ -310,6 +315,55 @@ def addstutodb(request):
         else:
             result['msg'] = '添加学生信息失败，请联系管理员处理!'
         return HttpResponse(json.dumps(result), content_type='application/json')
+    result['data'] = str(id)
+    return HttpResponse(json.dumps(result), content_type='application/json')
+
+
+# 提交缴费信息到数据库
+@csrf_exempt
+def addmoneytodb(request):
+    # 缴费信息
+    loginUser = request.session.get('login_username', False)
+    stuId = request.POST.get('stuId', '').strip()
+    termId = request.POST.get('termId', '').strip()
+    index = request.POST.get('index', '').strip()
+    remark = request.POST.get('remark', '').strip()
+    payMents = []
+    for i in range(1, int(index) + 1):
+        payMents.append(request.POST.get("f_id_" + str(i), '').strip())
+    print(loginUser, stuId, termId, index, payMents)
+    stuObj = get_object_or_404(student, id=stuId)
+    print(stuObj)
+    termObj = get_object_or_404(TermInfo, id=termId)
+    try:
+        with transaction.atomic():
+            term_flag = 0
+            for pay_ment in payMents:
+                f_type, f_aciton, f_money = pay_ment.split("_")
+                f_money = float(f_money)
+                if f_money == 0:
+                    f_status = "未缴费"
+                else:
+                    term_flag = 1
+                    f_status = "已缴费"
+                MoneyInfo, flag = PayMentInfo.objects.get_or_create(stuId=stuObj, termId=termObj, type=f_type, action=f_aciton)
+                MoneyInfo.money = f_money
+                MoneyInfo.status = f_status
+                MoneyInfo.remark = remark
+                MoneyInfo.person = loginUser
+                MoneyInfo.save()
+            stu_term_info, flag = student_term_info.objects.get_or_create(stuId=stuObj, termId=termObj)
+            if term_flag:
+                stu_term_info.status = "已报到"
+                stu_term_info.save()
+            else:
+                stu_term_info.delete()
+    except Exception as e:
+        print(traceback.format_exc())
+        result = {'status': 1, 'msg': '学生缴费信息写入数据库失败，请联系管理员！', 'data': []}
+        return HttpResponse(json.dumps(result), content_type='application/json')
+
+    result = {'status': 0, 'msg': '学生缴费成功！', 'data': ""}
 
     return HttpResponse(json.dumps(result), content_type='application/json')
 

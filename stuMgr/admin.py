@@ -36,9 +36,9 @@ class StudentTermAdmin(admin.ModelAdmin):
 @admin.register(student)
 class studentAdmin(admin.ModelAdmin):
     list_display = ('name', 'tel_num', 'card_id', 'birthday', 'classid', 'sex', 'fa_name', 'school_car',
-                    'is_shuangliu', 'is_chengdu', 'infos', 'address', 'remark')
+                    'is_shuangliu', 'is_chengdu', 'infos', 'address', 'person', 'remark')
     search_fields = ['name', 'tel_num', 'card_id', 'birthday', 'classid', 'sex', 'fa_name', 'school_car',
-                    'is_shuangliu', 'is_chengdu', 'infos', 'address', 'remark']
+                    'is_shuangliu', 'is_chengdu', 'infos', 'address', 'person', 'remark']
 
 
 admin.site.register(Payment_Plan)

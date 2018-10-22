@@ -46,7 +46,8 @@ class student(models.Model):
     is_chengdu = models.CharField('是否大成都', choices=(('否', '否'), ('是', '是')), max_length=20)
     infos = models.CharField('材料', max_length=50)
     address = models.CharField('户籍详细地址', max_length=180)
-    remark = models.TextField('备注')
+    person = models.CharField('责任人', max_length=50, default="")
+    remark = models.TextField('备注', default="")
     create_time = models.DateTimeField('创建时间', auto_now_add=True)
     update_time = models.DateTimeField('更新时间', auto_now=True)
 
@@ -74,8 +75,8 @@ class TermInfo(models.Model):
 class student_term_info(models.Model):
     stuId = models.ForeignKey('student', to_field='id', verbose_name='学号')
     termId = models.ForeignKey('TermInfo', to_field='id', verbose_name=u"学期")
-    status = models.CharField(max_length=20, verbose_name=u"报名情况", choices=(('已报到', '已报到'), ('未报到', '未报到')),
-                              default="未报到")
+    status = models.CharField(max_length=20, verbose_name=u"报名情况", choices=(('已报到', '已报到'), ('', '')),
+                              default="")
     create_time = models.DateTimeField('创建时间', auto_now_add=True)
     update_time = models.DateTimeField('更新时间', auto_now=True)
 
@@ -91,10 +92,7 @@ class student_term_info(models.Model):
 class Payment_item(models.Model):
     audit_id = models.AutoField(primary_key=True)
     type_info = models.CharField(max_length=20, verbose_name=u"种类")
-    action = models.CharField(max_length=20, choices=(
-        ('All', 'All'), ('1月', '1月'), ('2月', '2月'), ('3月', '3月'), ('4月', '4月'),('5月', '5月'),
-        ('6月', '6月'), ('7月', '7月'), ('8月', '8月'), ('9月', '9月'), ('10月', '10月'), ('11月', '11月'),
-        ('12月', '12月')), verbose_name="费用期间", default="All")
+    action = models.CharField(max_length=500, verbose_name="费用期间", default="All")
     money = models.CharField(max_length=20, verbose_name=u"金额")
 
 
@@ -110,6 +108,7 @@ class Payment_item(models.Model):
 class Payment_Plan(models.Model):
     audit_id = models.AutoField(primary_key=True)
     plan = models.ManyToManyField(Payment_item, verbose_name=u"缴费计划")
+    flag = models.BooleanField(verbose_name="是否激活", default=False)
 
     class Meta:
         verbose_name = u'缴费计划'
@@ -121,10 +120,13 @@ class PayMentInfo(models.Model):
     stuId = models.ForeignKey('student', to_field='id', verbose_name='学号')
     termId = models.ForeignKey('TermInfo', to_field='id', verbose_name=u"学期")
     type = models.CharField(max_length=20, verbose_name=u"种类")
-    action = models.CharField(max_length=20, verbose_name=u"费用期间")
+    action = models.CharField(max_length=20, verbose_name=u"费用期间", choices=(
+    ('All', 'All'), ('1月', '1月'), ('2月', '2月'), ('3月', '3月'), ('4月', '4月'), ('5月', '5月'), ('6月', '6月'), ('7月', '7月'),
+    ('8月', '8月'), ('9月', '9月'), ('10月', '10月'), ('11月', '11月'), ('12月', '12月')), default="All")
     money = models.FloatField(default=0.0, verbose_name=u"金额")
-    status = models.CharField(max_length=20, verbose_name=u"缴费情况")
-    remark = models.TextField(max_length=20, verbose_name=u"备注")
+    status = models.CharField(max_length=20, verbose_name=u"缴费情况", choices=(('已缴费', '已缴费'), ('未缴费', '未缴费')), default="未缴费")
+    person = models.CharField('责任人', max_length=50, default="")
+    remark = models.TextField(max_length=20, verbose_name=u"备注", default="")
     create_time = models.DateTimeField('创建时间', auto_now_add=True)
     update_time = models.DateTimeField('更新时间', auto_now=True)
 
@@ -138,6 +140,7 @@ class PreMent(models.Model):
     stuId = models.ForeignKey('student', to_field='id', verbose_name='学号')
     premoney = models.FloatField(default=0.0, verbose_name=u"预收费")
     remark = models.TextField(max_length=20, verbose_name=u"备注")
+    person = models.CharField('责任人', max_length=50, default="")
     create_time = models.DateTimeField('创建时间', auto_now_add=True)
     update_time = models.DateTimeField('更新时间', auto_now=True)
 
@@ -151,6 +154,7 @@ class Flowing(models.Model):
     stuId = models.ForeignKey('student', to_field='id', verbose_name='学号')
     flowing = models.FloatField(default=0.0, verbose_name=u"金额")
     remark = models.TextField(max_length=20, verbose_name=u"备注")
+    person = models.CharField('责任人', max_length=50, default="")
     create_time = models.DateTimeField('创建时间', auto_now_add=True)
     update_time = models.DateTimeField('更新时间', auto_now=True)
 
