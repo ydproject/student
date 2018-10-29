@@ -151,8 +151,6 @@ def getregister(request):
                    'fa_name', 'school_car', 'is_shuangliu', 'is_chengdu', 'infos', 'address')
     StudentInfoCount = student.objects.filter(Q(classid__class_name__contains=sel_class)).filter(Q(name__contains=search)|Q(tel_num__contains=search)|Q(card_id__contains=search)).count()
 
-    print(StudentInfoCount)
-
     # QuerySet 序列化
     rows_all = []
     rows_register = []
@@ -200,16 +198,23 @@ def getmoneysinfo(request):
         search = ''
 
     # 获取筛选参数
-    navStatus = request.POST.get('navStatus', "").strip()
+    sel_term = request.POST.get('sel_term', "").strip()
+    sel_class = request.POST.get('sel_class', "").strip()
+    sel_type = request.POST.get('sel_type', "").strip()
+    sel_action = request.POST.get('sel_action', "").strip()
+    sel_status = request.POST.get('sel_status', "").strip()
 
     # 全部学生缴费信息里面包含搜索条件
-    listMoneyInfo = PayMentInfo.objects.filter(termId__id=navStatus)\
-        .filter(Q(stuId__name__contains=search) | Q(stuId__card_id__contains=search) | Q(type__contains=search) | Q(action__contains=search) | Q(money__contains=search) | Q(status__contains=search)|Q(person__contains=search))\
+    listMoneyInfo = PayMentInfo.objects.filter(termId__id=sel_term)\
+        .filter(Q(stuId__classid__class_name__contains=sel_class) & Q(type__contains=sel_type) & Q(action__contains=sel_action) & Q(status__contains=sel_status))\
+        .filter(Q(stuId__name__contains=search) | Q(money__contains=search) |Q(person__contains=search))\
         .order_by('-create_time')[offset:limit]\
-        .values("id", "stuId__name", "stuId__card_id", "type", 'action', 'money', 'status', 'person', 'remark')
+        .values("id", "stuId__name", "stuId__classid__class_name", "type", 'action', 'money', 'status', 'person', 'remark')
 
-    MoneyInfoCount = PayMentInfo.objects.filter(termId__id=navStatus)\
-        .filter(Q(stuId__name__contains=search) | Q(stuId__card_id__contains=search) | Q(type__contains=search) | Q(action__contains=search) | Q(money__contains=search) | Q(status__contains=search)|Q(person__contains=search)).count()
+    MoneyInfoCount = PayMentInfo.objects.filter(termId__id=sel_term) \
+        .filter(Q(stuId__classid__class_name__contains=sel_class) & Q(type__contains=sel_type) & Q(
+        action__contains=sel_action) & Q(status__contains=sel_status)) \
+        .filter(Q(stuId__name__contains=search) | Q(money__contains=search) | Q(person__contains=search)).count()
 
     # QuerySet 序列化
     rows = [row for row in listMoneyInfo]
@@ -331,9 +336,7 @@ def addmoneytodb(request):
     payMents = []
     for i in range(1, int(index) + 1):
         payMents.append(request.POST.get("f_id_" + str(i), '').strip())
-    print(loginUser, stuId, termId, index, payMents)
     stuObj = get_object_or_404(student, id=stuId)
-    print(stuObj)
     termObj = get_object_or_404(TermInfo, id=termId)
     try:
         with transaction.atomic():
@@ -401,7 +404,6 @@ def importexcel(request):
     type = request.POST.get("type", "").strip()
     process = request.POST.get("process", "").strip()
     result = {'status': 0, 'msg': '学生信息导入成功！', 'data': []}
-    print("********", process, type, filename)
     if not filename:
         result = {'status': 1, 'msg': '请选择需要导入的文件！', 'data': []}
         return HttpResponse(json.dumps(result), content_type='application/json')
@@ -433,7 +435,6 @@ def importexcel(request):
                 student.objects.all().delete()
             for i in range(len(df)):
                 df_i = df.iloc[i]
-                print(df_i)
                 student.objects.get_or_create(name=df_i["姓名"], tel_num=df_i["联系电话"], card_id=df_i["身份证号码"],
                                               birthday=df_i["出生年月"], classid_id=df_i["班级"], sex=df_i["性别"],
                                               fa_name=df_i["监护人姓名"], school_car=df_i["校车"], is_shuangliu=df_i["是否双流户籍"],

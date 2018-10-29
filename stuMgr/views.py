@@ -5,7 +5,7 @@ from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.shortcuts import render, get_object_or_404
 
-from .models import classes, student, TermInfo, Payment_Plan, users, PayMentInfo
+from .models import classes, student, TermInfo, Payment_Plan, users, PayMentInfo, Payment_item
 # Create your views here.
 
 
@@ -23,7 +23,12 @@ def studentsinfo(request):
 # 学费信息页面
 def moneysinfo(request):
     terminfos = TermInfo.objects.all()
-    context = {'currentMenu': 'moneysinfo', 'terminfos': terminfos}
+    class_names = classes.objects.all()
+    pay_types = Payment_item.objects.all()
+    context = {'currentMenu': 'moneysinfo',
+               'terminfos': terminfos,
+               'pay_types': pay_types,
+               'classes': class_names}
     return render(request, 'moneyinfo.html', context)
 
 # 学生报名/缴费信息页面
@@ -72,7 +77,6 @@ def addmoney(request):
     payMentPlan = Payment_Plan.objects.filter(flag=True).values("plan__type_info", "plan__action", "plan__money")
     payMentPlan = [{'plan__type_info': payInfo['plan__type_info'], 'plan__action': payInfo['plan__action'].split(","),
                     'plan__money': payInfo['plan__money'].split(",")} for payInfo in payMentPlan]
-    print(payMentPlan)
     if flag == "add":
         termInfos = TermInfo.objects.all().values()
         termInfo = termInfos[0]
@@ -80,7 +84,6 @@ def addmoney(request):
     elif flag == "edit":
         termInfo = get_object_or_404(TermInfo, term_name=termName)
         OldPayMentInfo = PayMentInfo.objects.filter(stuId=stuId, termId__term_name=termInfo).values("type", "action", "money", "status")
-        print(OldPayMentInfo)
     else:
         return HttpResponseRedirect(reverse('stuMgr:register'))
 
@@ -108,7 +111,6 @@ def addmoney(request):
                 t_action["status"].append(t_money)
             temp["f_actions"].append(t_action)
         payMents.append(temp)
-    print(payMents)
 
     context = {'currentMenu': 'register',
                'TermInfo': termInfo,

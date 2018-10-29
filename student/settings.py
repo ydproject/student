@@ -153,11 +153,11 @@ LOGGING = {
             'handlers': ['default'],
             'level': 'DEBUG',
         },
-        'django.db': {  # 打印SQL语句到console，方便开发
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
+        # 'django.db': {  # 打印SQL语句到console，方便开发
+        #     'handlers': ['console'],
+        #     'level': 'DEBUG',
+        #     'propagate': False,
+        # },
         'django.request': {  # 打印错误堆栈信息到console，方便开发
             'handlers': ['console'],
             'level': 'DEBUG',
