@@ -3,54 +3,6 @@
 {% block content %}
     <!-- 自定义操作按钮-->
     <div id="toolbar" class="form-inline ">
-        <div class="form-group bootstrap-select ">
-            <select id="sel_term" class="dropdown-menu-right selectpicker ">
-                {% for terminfo in terminfos %}
-                <option value="{{terminfo.id}}">{{terminfo.term_name}}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="form-group bootstrap-select ">
-            <select id="sel_class" class="dropdown-menu-right selectpicker ">
-                <option value="" selected="selected">班级</option>
-                {% for classname in classes %}
-                <option value="{{classname.class_name}}">{{classname.class_name}}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="form-group bootstrap-select ">
-            <select id="sel_type" class="dropdown-menu-right selectpicker ">
-                <option value="" selected="selected">种类</option>
-                {% for pay_type in pay_types %}
-                <option value="{{pay_type.type_info}}">{{pay_type.type_info}}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="form-group bootstrap-select ">
-            <select id="sel_action" class="dropdown-menu-right selectpicker ">
-                <option value="" selected="selected">费用期间</option>
-                <option value="All">All</option>
-                <option value="1月">1月</option>
-                <option value="2月">2月</option>
-                <option value="3月">3月</option>
-                <option value="4月">4月</option>
-                <option value="5月">5月</option>
-                <option value="6月">6月</option>
-                <option value="7月">7月</option>
-                <option value="8月">8月</option>
-                <option value="9月">9月</option>
-                <option value="10月">10月</option>
-                <option value="11月">11月</option>
-                <option value="12月">12月</option>
-            </select>
-        </div>
-        <div class="form-group bootstrap-select ">
-            <select id="sel_status" class="dropdown-menu-right selectpicker ">
-                <option value="" selected="selected">缴费情况</option>
-                <option value="已缴费">已缴费</option>
-                <option value="未缴费">未缴费</option>
-            </select>
-        </div>
     </div>
     <!-- 审核列表的表格-->
     <div class="table-responsive">
@@ -58,27 +10,6 @@
                style="table-layout:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
         </table>
     </div>
-<!-- 模态框上传（Modal） -->
-<div class="modal fade" id="upload_model" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-					&times;
-				</button>
-				<h4 class="modal-title" id="commonModalLabel">请选择Excel文件</h4>
-			</div>
-			<div class="modal-body" id="uploadModal-body">
-                <a href="/static/studentsinfo.xlsx" download="studentsinfo.xlsx" class="form-control" style="border:none;">下载导入模板</a>
-                <input id="file-input" type="file" class="file" data-upload-url="/upload/">
-            </div>
-			<div class="modal-footer">
-                <button type="button" id="upload_confirm_all" class="btn btn-primary" data-dismiss="modal">全量导入</button>
-                <button type="button" id="upload_confirm_inc" class="btn btn-default" data-dismiss="modal">增量导入</button>
-			</div>
-		</div><!-- /.modal-content -->
-	</div><!-- /.modal -->
-</div>
 {% endblock content %}
 {% block js %}
     {% load staticfiles %}
@@ -99,7 +30,7 @@
             $('#sqlaudit-list').bootstrapTable('destroy').bootstrapTable({
                 method: 'post',
                 contentType: "application/x-www-form-urlencoded",
-                url: "/getmoneysinfo/",
+                url: "/getmoneyflow/",
                 striped: true,                      //是否显示行间隔色
                 cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
                 pagination: true,                   //是否显示分页（*）
@@ -112,7 +43,7 @@
                 exportDataType:'all',
                 showExport: true,                   //是否显示导出按钮
                 exportOptions: {
-                    fileName: 'moneysinfo'  //文件名称设置
+                    fileName: 'studentsinfo'  //文件名称设置
                 },
                 search: true,                      //是否显示表格搜索
                 strictSearch: false,                //是否全匹配搜索
@@ -133,11 +64,6 @@
                         return {
                             limit: params.limit,
                             offset: params.offset,
-                            sel_term: $("#sel_term").val(),
-                            sel_class: $("#sel_class").val(),
-                            sel_type: $("#sel_type").val(),
-                            sel_action: $("#sel_action").val(),
-                            sel_status: $("#sel_status").val(),
                             search: params.search
                         }
                     },
@@ -151,20 +77,17 @@
                     title: '姓名',
                     field: 'stuId__name'
                 }, {
-                    title: '班级',
-                    field: 'stuId__classid__class_name'
-                }, {
-                    title: '种类',
-                    field: 'type',
-                }, {
-                    title: '费用期间',
+                    title: '支付方式',
                     field: 'action'
                 }, {
+                    title: '收付款',
+                    field: 'type',
+                }, {
                     title: '金额',
-                    field: 'money'
-                },{
-                    title: '缴费情况',
-                    field: 'status'
+                    field: 'flowing'
+                }, {
+                    title: '时间',
+                    field: 'create_time'
                 },{
                     title: '责任人',
                     field: 'person'
@@ -190,19 +113,7 @@
         }
 
         //状态筛选变动自动刷新
-        $("#sel_term").change(function () {
-            get_sqlauditlist();
-        });
-        $("#sel_class").change(function () {
-            get_sqlauditlist();
-        });
-        $("#sel_type").change(function () {
-            get_sqlauditlist();
-        });
-        $("#sel_action").change(function () {
-            get_sqlauditlist();
-        });
-        $("#sel_status").change(function () {
+        $("#navStatus").change(function () {
             get_sqlauditlist();
         });
 

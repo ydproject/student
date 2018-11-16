@@ -20,6 +20,17 @@ def studentsinfo(request):
     context = {'currentMenu': 'studentsinfo', 'classes': class_names}
     return render(request, 'studentsinfo.html', context)
 
+# 学生预收费信息
+def premoney(request):
+    class_names = classes.objects.all()
+    context = {'currentMenu': 'premoney', 'classes': class_names}
+    return render(request, 'premoney.html', context)
+
+# 缴费流水信息
+def moneyflow(request):
+    context = {'currentMenu': 'moneyflow'}
+    return render(request, 'moneyflow.html', context)
+
 # 学费信息页面
 def moneysinfo(request):
     terminfos = TermInfo.objects.all()
@@ -65,7 +76,7 @@ def addstudent(request):
 def addmoney(request):
     stuId = request.GET.get("id", "")
     flag = request.GET.get("flag", "")
-    termName = request.GET.get("term", "")
+    termName = int(request.GET.get("term", ""))
     studentInfo = get_object_or_404(student, id=stuId)
     # 获取用户信息
     loginUser = request.session.get('login_username', False)
@@ -82,7 +93,7 @@ def addmoney(request):
         termInfo = termInfos[0]
         OldPayMentInfo = []
     elif flag == "edit":
-        termInfo = get_object_or_404(TermInfo, term_name=termName)
+        termInfo = get_object_or_404(TermInfo, id=termName)
         OldPayMentInfo = PayMentInfo.objects.filter(stuId=stuId, termId__term_name=termInfo).values("type", "action", "money", "status")
     else:
         return HttpResponseRedirect(reverse('stuMgr:register'))

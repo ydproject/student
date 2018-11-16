@@ -129,6 +129,25 @@
 		</div><!-- /.modal-content -->
 	</div><!-- /.modal -->
 </div>
+<!-- 模态框确认（Modal） -->
+<div class="modal fade" id="inputModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+					&times;
+				</button>
+				<h4 class="modal-title" id="inputModalLabel"></h4>
+			</div>
+			<div class="modal-body" id="inputModal-body"><p></p></div>
+            <div class="modal-body"><input id="common_input"/></div>
+			<div class="modal-footer">
+                <button type="button" id="input_confirm_ok" class="btn btn-primary sureBtn" data-dismiss="modal">确认</button>
+                <button type="button" id="input_confirm_cancel" class="btn btn-default cancelBtn" data-dismiss="modal">取消</button>
+			</div>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal -->
+</div>
     <!--底部部分 -->
     <div class="row clearfix user-bottom-div">
         <p><strong>自动化运维平台.</strong>&nbsp; Developed by OP.</p>
@@ -160,6 +179,18 @@
         });
         $('#confirmModal .cancelBtn').off('click').click(function() {
             Func(false);
+        })
+    };
+    function InputConfirm(title, content, Func) {
+        $('#inputModal .modal-title').text(title);
+        $('#inputModal .modal-body p').text(content);
+        $('#inputModal').modal('show');
+        $('#inputModal .sureBtn').off('click').click(function() {
+            var inputmsg = $('#common_input').val();
+            Func(true, inputmsg);
+        });
+        $('#inputModal .cancelBtn').off('click').click(function() {
+            Func(false, '');
         })
     };
 </script>

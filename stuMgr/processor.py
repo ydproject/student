@@ -3,11 +3,15 @@ from .models import users
 from django.conf import settings
 
 leftMenuBtnsCommon = (
-    {'key': 'studentsinfo', 'name': '学生信息', 'url': '/studentsinfo/', 'class': 'glyphicon glyphicon-home',
+    {'key': 'studentsinfo', 'name': '学生基本信息', 'url': '/studentsinfo/', 'class': 'glyphicon glyphicon-home',
      'display': True},
     {'key': 'register', 'name': '学生报名/缴费', 'url': '/register/', 'class': 'glyphicon glyphicon-align-right',
      'display': True},
-    {'key': 'moneysinfo', 'name': '缴费明细', 'url': '/moneysinfo/', 'class': 'glyphicon glyphicon-eye-open',
+    {'key': 'premoney', 'name': '学生预收费', 'url': '/premoney/', 'class': 'glyphicon glyphicon-scissors',
+     'display': True},
+    {'key': 'moneysinfo', 'name': '缴费明细信息', 'url': '/moneysinfo/', 'class': 'glyphicon glyphicon-eye-open',
+     'display': True},
+    {'key': 'moneyflow', 'name': '缴费流水信息', 'url': '/moneyflow/', 'class': 'glyphicon glyphicon-wrench',
      'display': True},
 )
 
@@ -31,7 +35,7 @@ def global_info(request):
         if user.is_superuser:
             leftMenuBtns = leftMenuBtnsCommon + leftMenuBtnsSuper + leftMenuBtnsDoc
         else:
-            leftMenuBtns = leftMenuBtnsCommon + leftMenuBtnsDoc
+            leftMenuBtns = leftMenuBtnsCommon
     else:
         leftMenuBtns = ()
         UserDisplay = ''

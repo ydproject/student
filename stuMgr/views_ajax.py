@@ -22,7 +22,7 @@ from django.db import transaction
 import pandas as pd
 
 from .extend_json_encoder import ExtendJSONEncoder
-from .models import student, classes, PayMentInfo, student_term_info, TermInfo
+from .models import student, classes, PayMentInfo, student_term_info, TermInfo, Flowing, PreMent
 from .common import clear
 
 
@@ -88,9 +88,13 @@ def getstudentsinfo(request):
     # 获取用户信息
     loginUser = request.session.get('login_username', False)
 
-    limit = int(request.POST.get('limit'))
-    offset = int(request.POST.get('offset'))
-    limit = offset + limit
+    limit = int(request.POST.get('limit', 0))
+    offset = int(request.POST.get('offset', 0))
+    if limit == 0 and offset == 0:
+        limit = None
+        offset = None
+    else:
+        limit = offset + limit
 
     # 获取搜索参数
     search = request.POST.get('search',"").strip()
@@ -124,22 +128,110 @@ def getstudentsinfo(request):
                         content_type='application/json')
 
 
+# 获取流水信息列表
+@csrf_exempt
+def getmoneyflow(request):
+    # 获取用户信息
+    loginUser = request.session.get('login_username', False)
+
+    limit = int(request.POST.get('limit', 0))
+    offset = int(request.POST.get('offset', 0))
+    if limit == 0 and offset == 0:
+        limit = None
+        offset = None
+    else:
+        limit = offset + limit
+
+    # 获取搜索参数
+    search = request.POST.get('search',"").strip()
+    if search is None:
+        search = ''
+
+    # 获取筛选参数
+    # navStatus = request.POST.get('navStatus',"").strip()
+
+
+    # 全部学生信息里面包含搜索条件
+    listStudentInfo = Flowing.objects.filter(Q(stuId__name__contains=search)|Q(type=search)|Q(action=search)|Q(person__contains=search))\
+                                                                     .order_by('-create_time')[offset:limit].\
+        values("id", 'stuId__name', 'action', 'type', 'flowing', 'create_time', 'person', 'remark')
+    StudentInfoCount = Flowing.objects.filter(Q(stuId__name__contains=search)|Q(type=search)|Q(action=search)|Q(person__contains=search)).count()
+
+    # QuerySet 序列化
+    rows = [row for row in listStudentInfo]
+
+    result = {"total": StudentInfoCount, "rows": rows}
+    # 返回查询结果
+    return HttpResponse(json.dumps(result, cls=ExtendJSONEncoder, bigint_as_string=True),
+                        content_type='application/json')
+
+
+# 获取预收费信息列表
+@csrf_exempt
+def getpremoney(request):
+    # 获取用户信息
+    loginUser = request.session.get('login_username', False)
+
+    limit = int(request.POST.get('limit', 0))
+    offset = int(request.POST.get('offset', 0))
+    if limit == 0 and offset == 0:
+        limit = None
+        offset = None
+    else:
+        limit = offset + limit
+
+    # 获取搜索参数
+    search = request.POST.get('search',"").strip()
+    if search is None:
+        search = ''
+
+    # 获取筛选参数
+    navStatus = request.POST.get('navStatus',"").strip()
+
+
+    # 全部学生信息里面包含搜索条件
+    if navStatus == 'all':
+        listStudentInfo = student.objects.filter(Q(name__contains=search)|Q(tel_num__contains=search)|Q(card_id__contains=search)|Q(sex=search)|Q(fa_name__contains=search)|Q(pre_person__contains=search))\
+                           .order_by('-create_time')[offset:limit]\
+            .values("id", 'name', 'tel_num', 'card_id', 'birthday', 'classid__class_name', 'sex',
+                   'fa_name', 'pre_person', 'premoney')
+        StudentInfoCount = student.objects.filter(Q(name__contains=search)|Q(tel_num__contains=search)|Q(card_id__contains=search)|Q(sex=search)|Q(fa_name__contains=search)|Q(pre_person__contains=search)).count()
+    else:
+        listStudentInfo = student.objects.filter(classid__id=navStatus).filter(Q(name__contains=search)|Q(tel_num__contains=search)|Q(card_id__contains=search)|Q(sex=search)|Q(fa_name__contains=search)|Q(pre_person__contains=search))\
+                                                                         .order_by('-create_time')[offset:limit].\
+            values("id", 'name', 'tel_num', 'card_id', 'birthday', 'classid__class_name', 'sex',
+                   'fa_name', 'pre_person', 'premoney')
+        StudentInfoCount = student.objects.filter(classid__id=navStatus).filter(Q(name__contains=search)|Q(tel_num__contains=search)|Q(card_id__contains=search)|Q(sex=search)|Q(fa_name__contains=search)|Q(pre_person__contains=search)).count()
+
+    # QuerySet 序列化
+    rows = [row for row in listStudentInfo]
+
+    result = {"total": StudentInfoCount, "rows": rows}
+    # 返回查询结果
+    return HttpResponse(json.dumps(result, cls=ExtendJSONEncoder, bigint_as_string=True),
+                        content_type='application/json')
+
+
 # 获取学生报名信息列表
 @csrf_exempt
 def getregister(request):
     # 获取用户信息
     loginUser = request.session.get('login_username', False)
 
-    limit = int(request.POST.get('limit'))
-    offset = int(request.POST.get('offset'))
-    limit = offset + limit
+    limit = int(request.POST.get('limit', 0))
+    offset = int(request.POST.get('offset', 0))
+    if limit == 0 and offset == 0:
+        limit = None
+        offset = None
+    else:
+        limit = offset + limit
 
     # 获取搜索参数
     search = request.POST.get('search',"").strip()
     if search is None:
         search = ''
     # 获取筛选参数
-    sel_term = request.POST.get('sel_term',"").strip()
+    sel_term = int(request.POST.get('sel_term', "").strip())
     sel_class = request.POST.get('sel_class', "").strip()
     sel_register = request.POST.get('sel_register', "").strip()
 
@@ -158,7 +250,7 @@ def getregister(request):
     for row in listStudentInfo:
         tmp = row.copy()
         stuid = row["id"]
-        listStuTermInfo = student_term_info.objects.filter(stuId=stuid).filter(Q(termId__term_name__contains=sel_term)).values("status")
+        listStuTermInfo = student_term_info.objects.filter(stuId=stuid, termId__id=sel_term).values("status")
         if listStuTermInfo:
             tmp["status"] = listStuTermInfo[0]["status"]
             rows_register.append(tmp)
@@ -188,9 +280,13 @@ def getmoneysinfo(request):
     # 获取用户信息
     loginUser = request.session.get('login_username', False)
 
-    limit = int(request.POST.get('limit'))
-    offset = int(request.POST.get('offset'))
-    limit = offset + limit
+    limit = int(request.POST.get('limit', 0))
+    offset = int(request.POST.get('offset', 0))
+    if limit == 0 and offset == 0:
+        limit = None
+        offset = None
+    else:
+        limit = offset + limit
 
     # 获取搜索参数
     search = request.POST.get('search',"").strip()
@@ -243,6 +339,52 @@ def delstudent(request):
             for student_id in student_ids:
                 id = int(student_id.split("=")[1])
                 student.objects.get(id=id).delete()
+    except Exception as msg:
+        import traceback
+        print(traceback.format_exc())
+        result['status'] = 1
+        result['msg'] = str(msg)
+        return HttpResponse(json.dumps(result), content_type='application/json')
+
+    return HttpResponse(json.dumps(result), content_type='application/json')
+
+# 修改预收费
+@csrf_exempt
+def modifypremoney(request):
+    # 获取用户信息
+    loginUser = request.session.get('login_username', False)
+    students = request.POST.get('studentsInfo', "")
+    msg = request.POST.get('msg', '')
+    result = {'status': 0, 'msg': '修改预收费成功！', 'data': []}
+
+    if not students:
+        result['status'] = 1
+        result['msg'] = '请选择需要修改预收费的学生！'
+        return HttpResponse(json.dumps(result), content_type='application/json')
+
+    student_ids = students.split("&")
+
+    if len(student_ids) != 1:
+        result['status'] = 1
+        result['msg'] = '一次只能修改一个学生！'
+        return HttpResponse(json.dumps(result), content_type='application/json')
+
+    try:
+        msg = float(msg)
+    except Exception as e:
+        result['status'] = 1
+        result['msg'] = '输入的金额不正确！'
+        return HttpResponse(json.dumps(result), content_type='application/json')
+
+    # 使用事务保持数据一致性
+    try:
+        with transaction.atomic():
+            for student_id in student_ids:
+                id = int(student_id.split("=")[1])
+                stuinfo = student.objects.get(id=id)
+                stuinfo.premoney = msg
+                stuinfo.pre_person = loginUser
+                stuinfo.save()
     except Exception as msg:
         import traceback
         print(traceback.format_exc())
@@ -320,7 +462,36 @@ def addstutodb(request):
         else:
             result['msg'] = '添加学生信息失败，请联系管理员处理!'
         return HttpResponse(json.dumps(result), content_type='application/json')
-    result['data'] = str(id)
+    result['data'] = {"stuid": str(id)}
+    result['data']['termid'] = TermInfo.objects.filter()[0].id
+    return HttpResponse(json.dumps(result), content_type='application/json')
+
+
+# 查询应缴费用/生成发票/生成二维码
+@csrf_exempt
+def seladdmoney(request):
+    # 查询应缴费信息
+    loginUser = request.session.get('login_username', False)
+    stuId = request.POST.get('stuId', '').strip()
+    termId = request.POST.get('termId', '').strip()
+    index = request.POST.get('index', '').strip()
+    remark = request.POST.get('remark', '').strip()
+    payMents = []
+    for i in range(1, int(index) + 1):
+        payMents.append(request.POST.get("f_id_" + str(i), '').strip())
+    print(payMents)
+    pay_money = []
+    for pay_ment in payMents:
+        f_type, f_aciton, f_money = pay_ment.split("_")
+        f_money = float(f_money)
+        MoneyInfo = PayMentInfo.objects.filter(stuId__id=stuId, termId__id=termId, type=f_type, action=f_aciton)
+        if MoneyInfo:
+            money_inc = f_money - MoneyInfo[0].money
+        else:
+            money_inc = f_money
+        pay_money.append((f_type, f_aciton, money_inc))
+    print(pay_money)
+    result = {'status': 0, 'msg': '学生缴费成功！', 'data': ""}
     return HttpResponse(json.dumps(result), content_type='application/json')
 
 
@@ -338,6 +509,7 @@ def addmoneytodb(request):
         payMents.append(request.POST.get("f_id_" + str(i), '').strip())
     stuObj = get_object_or_404(student, id=stuId)
     termObj = get_object_or_404(TermInfo, id=termId)
+    pay_money = []
     try:
         with transaction.atomic():
             term_flag = 0
@@ -350,23 +522,50 @@ def addmoneytodb(request):
                     term_flag = 1
                     f_status = "已缴费"
                 MoneyInfo, flag = PayMentInfo.objects.get_or_create(stuId=stuObj, termId=termObj, type=f_type, action=f_aciton)
+                if flag:
+                    money_inc = f_money
+                else:
+                    money_inc = f_money - MoneyInfo.money
                 MoneyInfo.money = f_money
                 MoneyInfo.status = f_status
                 MoneyInfo.remark = remark
                 MoneyInfo.person = loginUser
                 MoneyInfo.save()
+                pay_money.append((f_type, f_aciton, money_inc))
             stu_term_info, flag = student_term_info.objects.get_or_create(stuId=stuObj, termId=termObj)
             if term_flag:
                 stu_term_info.status = "已报到"
                 stu_term_info.save()
             else:
                 stu_term_info.delete()
+
+            all_money = sum([i[2] for i in pay_money])
+            stu_pre_money = stuObj.premoney
+            flowing = all_money - stu_pre_money
+            if flowing > 0:
+                f_type = "收款"
+            elif flowing < 0:
+                f_type = "退款"
+            else:
+                f_type = "无需缴费"
+            if f_type != "无需缴费":
+                Flowing.objects.create(stuId=stuObj, action="现金", type=f_type, flowing=flowing, person=loginUser)
+
+            stuObj.premoney = 0
+            stuObj.save()
+
     except Exception as e:
         print(traceback.format_exc())
         result = {'status': 1, 'msg': '学生缴费信息写入数据库失败，请联系管理员！', 'data': []}
         return HttpResponse(json.dumps(result), content_type='application/json')
 
-    result = {'status': 0, 'msg': '学生缴费成功！', 'data': ""}
+    msg = f"""学生缴费成功！
+    应缴费用:{all_money},
+    抵扣预收费:{stu_pre_money},
+    实际缴费:{flowing}
+    """
+
+    result = {'status': 0, 'msg': msg, 'data': ""}
 
     return HttpResponse(json.dumps(result), content_type='application/json')
 

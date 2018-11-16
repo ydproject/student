@@ -11,10 +11,16 @@
 import os
 import shutil
 
+from .models import PayMentInfo
+
 
 def clear(path):
     shutil.rmtree(path)
     os.mkdir(path)
+
+
+def get_money_info():
+    pass
 
 
 if __name__ == "__main__":

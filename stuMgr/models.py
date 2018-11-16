@@ -48,6 +48,8 @@ class student(models.Model):
     address = models.CharField('户籍详细地址', max_length=180)
     person = models.CharField('责任人', max_length=50, default="")
     remark = models.TextField('备注', default="")
+    premoney = models.FloatField(default=0.0, verbose_name=u"预收费")
+    pre_person = models.CharField('预收费责任人', max_length=50, default="")
     create_time = models.DateTimeField('创建时间', auto_now_add=True)
     update_time = models.DateTimeField('更新时间', auto_now=True)
 
@@ -139,8 +141,8 @@ class PayMentInfo(models.Model):
 class PreMent(models.Model):
     stuId = models.ForeignKey('student', to_field='id', verbose_name='学号')
     premoney = models.FloatField(default=0.0, verbose_name=u"预收费")
-    remark = models.TextField(max_length=20, verbose_name=u"备注")
-    person = models.CharField('责任人', max_length=50, default="")
+    remark = models.TextField(max_length=20, verbose_name=u"备注", default="")
+    person = models.CharField('责任人', max_length=20, default="")
     create_time = models.DateTimeField('创建时间', auto_now_add=True)
     update_time = models.DateTimeField('更新时间', auto_now=True)
 
@@ -153,7 +155,11 @@ class PreMent(models.Model):
 class Flowing(models.Model):
     stuId = models.ForeignKey('student', to_field='id', verbose_name='学号')
     flowing = models.FloatField(default=0.0, verbose_name=u"金额")
-    remark = models.TextField(max_length=20, verbose_name=u"备注")
+    remark = models.TextField(max_length=20, verbose_name=u"备注", default="")
+    type = models.CharField(max_length=20, verbose_name=u"收付款", choices=(
+        ('收款', '收款'), ('退款', '退款')), default="收款")
+    action = models.CharField(max_length=20, verbose_name=u"方式", choices=(
+        ('微信', '微信'), ('支付宝', '支付宝'), ('现金', '现金'), ('银行卡', '银行卡')), default="现金")
     person = models.CharField('责任人', max_length=50, default="")
     create_time = models.DateTimeField('创建时间', auto_now_add=True)
     update_time = models.DateTimeField('更新时间', auto_now=True)
