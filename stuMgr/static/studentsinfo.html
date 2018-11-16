@@ -18,12 +18,14 @@
                 添加学生
             </button>
         </div>
+        {% if loginuser.role == '管理员' %}
         <div class="form-group">
             <button id="btn_del" type="button" class="btn btn-default">
                 <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
                 删除学生
             </button>
         </div>
+        {% endif %}
         <div class="form-group">
             <button id="btn_import" type="button" class="btn btn-default">
                 <span class="glyphicon glyphicon-upload" aria-hidden="true"></span>

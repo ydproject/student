@@ -16,8 +16,11 @@ def login(request):
 
 # 学生信息页面
 def studentsinfo(request):
+    # 获取用户信息
+    loginUser = request.session.get('login_username', "")
+    loginUserOb = users.objects.get(username=loginUser)
     class_names = classes.objects.all()
-    context = {'currentMenu': 'studentsinfo', 'classes': class_names}
+    context = {'currentMenu': 'studentsinfo', 'classes': class_names, 'loginuser': loginUserOb}
     return render(request, 'studentsinfo.html', context)
 
 # 学生预收费信息
