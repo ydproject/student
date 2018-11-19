@@ -22,7 +22,7 @@ from django.db import transaction
 import pandas as pd
 
 from .extend_json_encoder import ExtendJSONEncoder
-from .models import student, classes, PayMentInfo, student_term_info, TermInfo, Flowing, PreMent
+from .models import student, classes, PayMentInfo, student_term_info, TermInfo, Flowing, PreMent, users
 from .common import clear
 
 
@@ -357,6 +357,9 @@ def modifypremoney(request):
     msg = request.POST.get('msg', '')
     result = {'status': 0, 'msg': '修改预收费成功！', 'data': []}
 
+    loginUserOb = users.objects.get(username=loginUser)
+    UserDisplay = loginUserOb.display
+
     if not students:
         result['status'] = 1
         result['msg'] = '请选择需要修改预收费的学生！'
@@ -382,9 +385,22 @@ def modifypremoney(request):
             for student_id in student_ids:
                 id = int(student_id.split("=")[1])
                 stuinfo = student.objects.get(id=id)
+                try:
+                    l_premoney = float(stuinfo.premoney)
+                except Exception as e:
+                    l_premoney = 0.0
+                flowing = msg - l_premoney 
                 stuinfo.premoney = msg
-                stuinfo.pre_person = loginUser
+                stuinfo.pre_person = UserDisplay
                 stuinfo.save()
+                if flowing > 0:
+                    f_type = "收款"
+                elif flowing < 0:
+                    f_type = "退款"
+                else:
+                    f_type = "无需缴费"
+                if f_type != "无需缴费":
+                    Flowing.objects.create(stuId=stuinfo, action="现金", type=f_type, flowing=flowing, person=UserDisplay)
     except Exception as msg:
         import traceback
         print(traceback.format_exc())
@@ -416,13 +432,12 @@ def addstutodb(request):
     remark = request.POST.get('remark', '').strip()
     result = {'status': 0, 'msg': '添加学生信息成功！', 'data': ""}
 
+    loginUserOb = users.objects.get(username=loginUser)
+    UserDisplay = loginUserOb.display
+
     if len(tel_num) != 11:
         result['status'] = 1
         result['msg'] = '联系电话输入不正确!'
-        return HttpResponse(json.dumps(result), content_type='application/json')
-    if len(card_id) != 18:
-        result['status'] = 1
-        result['msg'] = '身份证号码输入不正确!'
         return HttpResponse(json.dumps(result), content_type='application/json')
 
     try:
@@ -440,17 +455,17 @@ def addstutodb(request):
             Student.is_chengdu = is_chengdu
             Student.infos = infos
             Student.address = address
-            Student.person = loginUser
+            Student.person = UserDisplay
             Student.remark = remark
             Student.save()
             result["msg"] = "编辑学生信息成功!"
         else:
-            if student.objects.filter(card_id=card_id):
-                result['status'] = 1
-                result['msg'] = '该身份证号码的学生已存在!'
-                return HttpResponse(json.dumps(result), content_type='application/json')
+            # if student.objects.filter(card_id=card_id):
+            #     result['status'] = 1
+            #     result['msg'] = '该身份证号码的学生已存在!'
+            #     return HttpResponse(json.dumps(result), content_type='application/json')
             Student = student(name=name,tel_num=tel_num, card_id=card_id, birthday=birthday, classid_id=classid, sex=sex, fa_name=fa_name,
-                school_car=school_car, is_shuangliu=is_shuangliu, is_chengdu=is_chengdu, infos=infos, address=address, person=loginUser, remark=remark)
+                school_car=school_car, is_shuangliu=is_shuangliu, is_chengdu=is_chengdu, infos=infos, address=address, person=UserDisplay, remark=remark)
             Student.save()
             id = student.objects.all()[0].id
     except Exception as msg:
@@ -504,6 +519,10 @@ def addmoneytodb(request):
     termId = request.POST.get('termId', '').strip()
     index = request.POST.get('index', '').strip()
     remark = request.POST.get('remark', '').strip()
+
+    loginUserOb = users.objects.get(username=loginUser)
+    UserDisplay = loginUserOb.display
+
     payMents = []
     for i in range(1, int(index) + 1):
         payMents.append(request.POST.get("f_id_" + str(i), '').strip())
@@ -529,7 +548,7 @@ def addmoneytodb(request):
                 MoneyInfo.money = f_money
                 MoneyInfo.status = f_status
                 MoneyInfo.remark = remark
-                MoneyInfo.person = loginUser
+                MoneyInfo.person = UserDisplay
                 MoneyInfo.save()
                 pay_money.append((f_type, f_aciton, money_inc))
             stu_term_info, flag = student_term_info.objects.get_or_create(stuId=stuObj, termId=termObj)
@@ -549,7 +568,7 @@ def addmoneytodb(request):
             else:
                 f_type = "无需缴费"
             if f_type != "无需缴费":
-                Flowing.objects.create(stuId=stuObj, action="现金", type=f_type, flowing=flowing, person=loginUser)
+                Flowing.objects.create(stuId=stuObj, action="现金", type=f_type, flowing=flowing, person=UserDisplay)
 
             stuObj.premoney = 0
             stuObj.save()

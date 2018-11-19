@@ -38,7 +38,7 @@
                                     <label class="required" for="id_card_id">身份证件号码:</label>
                                 </div>
                                 <div class="controls col-md-9">
-                                        <input class="vTextField" id="id_card_id" maxlength="50" name="card_id" data-name="身份证件号码" type="text" required>
+                                        <input class="vTextField" id="id_card_id" maxlength="50" name="card_id" data-name="身份证件号码" type="text">
                                 </div>
                             </div>
                         </div>
@@ -63,7 +63,7 @@
                                     </div>
                                     <div class="controls col-md-9">
                                         <div class="related-widget-wrapper">
-                                            <select id="id_classid" name="classid" data-name="班级" data-placeholder="---------" required>
+                                            <select id="id_classid" name="classid" data-name="班级" data-placeholder="---------">
                                                 <option value="" selected="selected">---------</option>
                                                 {% for classinfo in AllClassesInfo %}
                                                 <option value="{{classinfo.id}}">{{classinfo.class_name}}</option>
@@ -165,7 +165,7 @@
                                         <label class="required" for="id_address">户籍详细地址:</label>
                                     </div>
                                     <div class="controls col-md-9">
-                                            <input class="vTextField" id="id_address" maxlength="180" name="address" data-name="户籍详细地址" type="text" required>
+                                            <input class="vTextField" id="id_address" maxlength="180" name="address" data-name="户籍详细地址" type="text">
                                     </div>
                                 </div>
                             </div>

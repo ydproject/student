@@ -34,6 +34,7 @@ class classes(models.Model):
 
 
 class student(models.Model):
+    id = models.AutoField(primary_key=True)
     name = models.CharField('姓名', max_length=50)
     tel_num = models.CharField('联系电话', max_length=50)
     card_id = models.CharField('身份证件号码', max_length=50)

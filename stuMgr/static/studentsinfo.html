@@ -26,12 +26,14 @@
             </button>
         </div>
         {% endif %}
+        {% if loginuser.role == '管理员' %}
         <div class="form-group">
             <button id="btn_import" type="button" class="btn btn-default">
                 <span class="glyphicon glyphicon-upload" aria-hidden="true"></span>
                 导入学生
             </button>
         </div>
+        {% endif %}
     </div>
     <!-- 审核列表的表格-->
     <div class="table-responsive">

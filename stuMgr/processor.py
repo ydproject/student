@@ -5,6 +5,9 @@ from django.conf import settings
 leftMenuBtnsCommon = (
     {'key': 'studentsinfo', 'name': '学生基本信息', 'url': '/studentsinfo/', 'class': 'glyphicon glyphicon-home',
      'display': True},
+)
+
+leftMenuBtnsMoney = (
     {'key': 'register', 'name': '学生报名/缴费', 'url': '/register/', 'class': 'glyphicon glyphicon-align-right',
      'display': True},
     {'key': 'premoney', 'name': '学生预收费', 'url': '/premoney/', 'class': 'glyphicon glyphicon-scissors',
@@ -33,7 +36,9 @@ def global_info(request):
         if UserDisplay == '':
             UserDisplay = loginUser
         if user.is_superuser:
-            leftMenuBtns = leftMenuBtnsCommon + leftMenuBtnsSuper + leftMenuBtnsDoc
+            leftMenuBtns = leftMenuBtnsCommon + leftMenuBtnsMoney + leftMenuBtnsSuper + leftMenuBtnsDoc
+        elif user.role == '财务':
+            leftMenuBtns = leftMenuBtnsCommon + leftMenuBtnsMoney
         else:
             leftMenuBtns = leftMenuBtnsCommon
     else:
